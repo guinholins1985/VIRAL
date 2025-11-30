@@ -3,7 +3,7 @@ import Header from './Header';
 import VideoFeed from './VideoFeed';
 import UserProfile from './UserProfile';
 import RewardTracker from './RewardTracker';
-import { User, Video, RewardConfig } from '../../types';
+import { User, Video, RewardConfig, AdsenseConfig } from '../../types'; // Import AdsenseConfig
 import { getVideos, addVideoReward, getCurrentUser, updateUserPreferences } from '../../services/apiService';
 import VideoPlayerPage from './VideoPlayerPage';
 import LoadingSpinner from '../shared/LoadingSpinner';
@@ -13,9 +13,10 @@ interface AppLayoutProps {
   onLogout: () => void;
   geminiApiKey: string; // Add geminiApiKey prop
   rewardConfig: RewardConfig; // Add rewardConfig prop
+  adsenseConfig: AdsenseConfig; // Add adsenseConfig prop
 }
 
-const AppLayout: React.FC<AppLayoutProps> = ({ currentUser: initialUser, onLogout, geminiApiKey, rewardConfig }) => {
+const AppLayout: React.FC<AppLayoutProps> = ({ currentUser: initialUser, onLogout, geminiApiKey, rewardConfig, adsenseConfig }) => {
   const [currentUser, setCurrentUser] = useState<User>(initialUser);
   const [currentPage, setCurrentPage] = useState<'feed' | 'profile' | 'rewards'>('feed');
   const [videos, setVideos] = useState<Video[]>([]);
@@ -101,6 +102,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ currentUser: initialUser, onLogou
                 currentUser={currentUser}
                 onUpdatePreferences={handleUpdatePreferences}
                 geminiApiKey={geminiApiKey} // Pass updated Gemini API key
+                adsenseConfig={adsenseConfig} // Pass adsense config to VideoFeed
               />
             )}
             {currentPage === 'profile' && (

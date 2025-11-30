@@ -177,6 +177,7 @@ const App: React.FC = () => {
           onLogout={handleLogout}
           geminiApiKey={appSettings.geminiApiKey} // Pass updated API key
           rewardConfig={rewardConfig} // Pass updated reward config
+          adsenseConfig={adsenseConfig} // Pass updated adsense config
         />
       )}
       {currentRoute === AppRoute.ADMIN && currentUser && currentUser.isAdmin && (

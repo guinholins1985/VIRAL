@@ -85,7 +85,7 @@ const AdsenseConfig: React.FC<AdsenseConfigProps> = ({ onUpdateGlobalAdsenseConf
       const newAdBlock: AdBlock = {
         id: `ad${Date.now()}`,
         name: `Novo Bloco ${adsenseConfig.adBlocks.length + 1}`,
-        code: '<!-- Seu novo código de anúncio aqui -->',
+        code: '<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="auto" data-full-width-responsive="true"></ins>', // Default <ins> tag structure
         active: false,
         placement: AD_PLACEMENT_OPTIONS[0].value, // Default to first option's value
       };
@@ -238,13 +238,14 @@ const AdsenseConfig: React.FC<AdsenseConfigProps> = ({ onUpdateGlobalAdsenseConf
               </div>
               <div className="mb-4">
                 <label className="block text-gray-300 text-sm font-bold mb-2">
-                  Código do Bloco de Anúncio
+                  Código do Bloco de Anúncio (<span className="text-blue-400">Apenas a tag &lt;ins&gt;</span>)
                 </label>
                 <textarea
                   value={adBlock.code}
                   onChange={(e) => handleAdBlockChange(index, 'code', e.target.value)}
                   rows={4}
                   className="shadow appearance-none border border-gray-600 rounded w-full py-2 px-3 text-gray-300 leading-tight focus:outline-none focus:shadow-outline bg-gray-600 placeholder-gray-400"
+                  placeholder="&lt;ins class=&quot;adsbygoogle&quot; style=&quot;display:block&quot; data-ad-client=&quot;ca-pub-XXXXXXXXXXXXXX&quot; data-ad-slot=&quot;XXXXXXXXXX&quot; data-ad-format=&quot;auto&quot;&gt;&lt;/ins&gt;"
                 ></textarea>
               </div>
               <div className="flex items-center">
