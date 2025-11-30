@@ -3,8 +3,8 @@ import LandingPage from './components/landing/LandingPage';
 import AuthPage from './components/auth/AuthPage';
 import AppLayout from './components/app/AppLayout';
 import AdminLayout from './components/admin/AdminLayout';
-import { User } from './types';
-import { getCurrentUser, login as apiLogin, register as apiRegister } from './services/apiService';
+import { User, AdsenseConfig } from './types';
+import { getCurrentUser, login as apiLogin, register as apiRegister, getAdsenseConfig } from './services/apiService';
 
 // Define the available routes/pages
 enum AppRoute {
@@ -40,6 +40,57 @@ const App: React.FC = () => {
     checkAuth();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Effect to dynamically inject AdSense verification codes and the main AdSense script into the document head
+  useEffect(() => {
+    const cleanupElements: HTMLElement[] = []; // Collect elements to remove on cleanup
+
+    const injectAdsenseElements = async () => {
+      try {
+        const adsenseConfig: AdsenseConfig = await getAdsenseConfig();
+
+        // 1. Inject AdSense Verification Meta Tags
+        adsenseConfig.verificationCodes.forEach(code => {
+          if (code.trim()) { // Ensure code is not empty
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(code, 'text/html');
+            const metaTag = doc.head.querySelector('meta');
+
+            if (metaTag && !document.head.querySelector(`meta[name="${metaTag.name}"][content="${metaTag.content}"]`)) {
+              document.head.appendChild(metaTag);
+              cleanupElements.push(metaTag);
+            } else if (!metaTag) {
+              console.warn("Código de verificação do AdSense inválido detectado (não é uma tag meta):", code);
+            }
+          }
+        });
+
+        // 2. Inject AdSense Main Script for Ad Serving
+        if (adsenseConfig.adsenseId && !document.head.querySelector(`script[src*="pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseConfig.adsenseId}"]`)) {
+          const script = document.createElement('script');
+          script.async = true;
+          script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseConfig.adsenseId}`;
+          script.crossOrigin = 'anonymous';
+          document.head.appendChild(script);
+          cleanupElements.push(script); // Add script to cleanup list
+        }
+
+      } catch (error) {
+        console.error("Erro ao buscar ou injetar elementos do AdSense:", error);
+      }
+    };
+
+    injectAdsenseElements();
+
+    // Cleanup function: remove all injected elements when component unmounts
+    return () => {
+      cleanupElements.forEach(el => {
+        if (el.parentNode) {
+          el.parentNode.removeChild(el);
+        }
+      });
+    };
+  }, []); // Run once on component mount
 
   const handleLogin = async (emailOrUsername: string, pass: string): Promise<boolean> => {
     setLoading(true);
