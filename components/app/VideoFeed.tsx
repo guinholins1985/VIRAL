@@ -1,23 +1,25 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Video, User, AdsenseConfig } from '../../types'; // Re-added AdsenseConfig import
+import { Video, User, AdsenseConfig } from '../../types';
 import VideoCard from './VideoCard';
 import LoadingSpinner from '../shared/LoadingSpinner';
 import { getRecommendation } from '../../services/geminiService';
 import Button from '../shared/Button';
 import Input from '../shared/Input';
-import { SparklesIcon } from '../icons/HeroIcons'; // Corrected import path
-import AdUnit from './AdUnit'; // Re-added AdUnit import
+import { SparklesIcon } from '../icons/HeroIcons';
+import AdUnit from './AdUnit';
 
 interface VideoFeedProps {
-  videos: Video[];
+  videos: Video[]; // Now received as prop
+  loading: boolean; // Now received as prop
   onOpenVideo: (video: Video) => void;
   currentUser: User;
   onUpdatePreferences: (preferences: string[]) => void;
-  geminiApiKey: string; // Accept geminiApiKey as prop
-  adsenseConfig: AdsenseConfig; // Re-added adsenseConfig prop
+  geminiApiKey: string;
+  adsenseConfig: AdsenseConfig;
+  refreshVideos: () => Promise<void>; // Now received as prop
 }
 
-const VideoFeed: React.FC<VideoFeedProps> = ({ videos, onOpenVideo, currentUser, onUpdatePreferences, geminiApiKey, adsenseConfig }) => {
+const VideoFeed: React.FC<VideoFeedProps> = ({ videos, loading, onOpenVideo, currentUser, onUpdatePreferences, geminiApiKey, adsenseConfig, refreshVideos }) => {
   const [recommendation, setRecommendation] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [preferenceInput, setPreferenceInput] = useState<string>('');
@@ -26,10 +28,10 @@ const VideoFeed: React.FC<VideoFeedProps> = ({ videos, onOpenVideo, currentUser,
 
   const fetchRecommendation = useCallback(async (preferences: string[]) => {
     setAiLoading(true);
-    const rec = await getRecommendation(preferences, geminiApiKey); // Pass geminiApiKey to service
+    const rec = await getRecommendation(preferences, geminiApiKey);
     setRecommendation(rec);
     setAiLoading(false);
-  }, [geminiApiKey]); // Add geminiApiKey to dependencies
+  }, [geminiApiKey]);
 
   useEffect(() => {
     if (currentUser.preferences && currentUser.preferences.length > 0) {
@@ -38,21 +40,19 @@ const VideoFeed: React.FC<VideoFeedProps> = ({ videos, onOpenVideo, currentUser,
       setRecommendation("Parece que você é novo por aqui! Assista alguns vídeos ou nos diga seus interesses para obter recomendações personalizadas.");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUser.preferences, fetchRecommendation]); // Only re-fetch if preferences or fetchRecommendation change
+  }, [currentUser.preferences, fetchRecommendation]);
 
   const handleAddPreference = () => {
     if (preferenceInput.trim() && !currentUser.preferences.includes(preferenceInput.trim().toLowerCase())) {
       const newPreferences = [...currentUser.preferences, preferenceInput.trim().toLowerCase()];
       onUpdatePreferences(newPreferences);
       setPreferenceInput('');
-      // fetchRecommendation(newPreferences); // Recommendation will re-fetch due to currentUser.preferences dependency
     }
   };
 
   const handleRemovePreference = (prefToRemove: string) => {
     const newPreferences = currentUser.preferences.filter(pref => pref !== prefToRemove);
     onUpdatePreferences(newPreferences);
-    // fetchRecommendation(newPreferences); // Recommendation will re-fetch due to currentUser.preferences dependency
   };
 
 
@@ -99,7 +99,12 @@ const VideoFeed: React.FC<VideoFeedProps> = ({ videos, onOpenVideo, currentUser,
       </div>
 
 
-      {videos.length === 0 ? (
+      {loading ? ( // Use prop loading for video list
+        <div className="flex items-center justify-center p-8">
+          <LoadingSpinner size="lg" />
+          <p className="ml-4 text-white">Carregando vídeos...</p>
+        </div>
+      ) : videos.length === 0 ? (
         <p className="text-gray-400 text-center">Nenhum vídeo disponível no momento.</p>
       ) : (
         <div className="space-y-6">

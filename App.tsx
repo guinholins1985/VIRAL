@@ -3,7 +3,7 @@ import LandingPage from './components/landing/LandingPage';
 import AuthPage from './components/auth/AuthPage';
 import AppLayout from './components/app/AppLayout';
 import AdminLayout from './components/admin/AdminLayout';
-import { User, AdsenseConfig, AppSettings, RewardConfig } from './types';
+import { User, AdsenseConfig, AppSettings, RewardConfig, Video } from './types';
 import { getCurrentUser, login as apiLogin, register as apiRegister, getAdsenseConfig, getAppSettings, getRewardConfig, getVideos } from './services/apiService'; // Import getVideos
 
 // Define the available routes/pages
@@ -18,15 +18,20 @@ enum AppRoute {
 const App: React.FC = () => {
   const [currentRoute, setCurrentRoute] = useState<AppRoute>(AppRoute.LANDING);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loadingAppConfig, setLoadingAppConfig] = useState(true); // Renamed for clarity: initial app config loading
 
   // Global states for admin configurations
   const [adsenseConfig, setAdsenseConfig] = useState<AdsenseConfig | null>(null);
   const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
   const [rewardConfig, setRewardConfig] = useState<RewardConfig | null>(null);
 
+  // Global states for video list (elevated from AppLayout)
+  const [videos, setVideos] = useState<Video[]>([]);
+  const [loadingVideos, setLoadingVideos] = useState(true);
+
+
   const checkAuth = useCallback(async () => {
-    setLoading(true);
+    setLoadingAppConfig(true);
     const user = await getCurrentUser();
     if (user) {
       setCurrentUser(user);
@@ -38,7 +43,7 @@ const App: React.FC = () => {
     } else {
       setCurrentRoute(AppRoute.LANDING);
     }
-    setLoading(false);
+    setLoadingAppConfig(false);
   }, []);
 
   // Function to refresh global AdsenseConfig state
@@ -59,16 +64,18 @@ const App: React.FC = () => {
     setRewardConfig(config);
   }, []);
 
-  // New callback to trigger video list refresh globally
-  const handleVideoListChanged = useCallback(async () => {
-    // This function will be passed down to AppLayout and AdminLayout
-    // AppLayout will use it to re-fetch videos for the main feed.
-    // AdminLayout's video management will also be implicitly updated on its next render.
-    // For now, simply forcing AppLayout to re-render is enough.
-    // In a more complex app, this might trigger a context update or a direct fetch.
-    // For this mock, a simpler approach is needed since AppLayout manages its own video state.
-    // Let's ensure AppLayout has a way to directly trigger its fetchVideos.
-    // (This will be implemented in AppLayout)
+  // Centralized function to refresh the video list
+  const refreshVideos = useCallback(async () => {
+    setLoadingVideos(true);
+    try {
+      const fetchedVideos = await getVideos();
+      setVideos(fetchedVideos);
+    } catch (error) {
+      console.error("Falha ao buscar vídeos:", error);
+      setVideos([]); // Clear videos on error
+    } finally {
+      setLoadingVideos(false);
+    }
   }, []);
 
 
@@ -82,6 +89,7 @@ const App: React.FC = () => {
     
     checkAuth();
     fetchAllConfigs();
+    refreshVideos(); // Initial fetch of videos
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -121,7 +129,7 @@ const App: React.FC = () => {
   }, [adsenseConfig]); // Re-run effect when adsenseConfig changes
 
   const handleLogin = async (emailOrUsername: string, pass: string): Promise<boolean> => {
-    setLoading(true);
+    setLoadingAppConfig(true);
     const user = await apiLogin(emailOrUsername, pass);
     if (user) {
       setCurrentUser(user);
@@ -130,23 +138,23 @@ const App: React.FC = () => {
       } else {
         setCurrentRoute(AppRoute.APP);
       }
-      setLoading(false);
+      setLoadingAppConfig(false);
       return true;
     }
-    setLoading(false);
+    setLoadingAppConfig(false);
     return false;
   };
 
   const handleRegister = async (name: string, email: string, pass: string): Promise<boolean> => {
-    setLoading(true);
+    setLoadingAppConfig(true);
     const user = await apiRegister(name, email, pass);
     if (user) {
       setCurrentUser(user);
       setCurrentRoute(AppRoute.APP);
-      setLoading(false);
+      setLoadingAppConfig(false);
       return true;
     }
-    setLoading(false);
+    setLoadingAppConfig(false);
     return false;
   };
 
@@ -160,7 +168,7 @@ const App: React.FC = () => {
     setCurrentRoute(route);
   }, []);
 
-  if (loading || !adsenseConfig || !appSettings || !rewardConfig) {
+  if (loadingAppConfig || loadingVideos || !adsenseConfig || !appSettings || !rewardConfig) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-900">
         <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
@@ -190,7 +198,9 @@ const App: React.FC = () => {
           geminiApiKey={appSettings.geminiApiKey} // Pass updated API key
           rewardConfig={rewardConfig} // Pass updated reward config
           adsenseConfig={adsenseConfig} // Pass updated adsense config
-          onVideoListChanged={handleVideoListChanged} // Pass new callback
+          videos={videos} // Pass videos from App.tsx
+          loadingVideos={loadingVideos} // Pass loading state for videos
+          refreshVideos={refreshVideos} // Pass the refresh callback
         />
       )}
       {currentRoute === AppRoute.ADMIN && currentUser && currentUser.isAdmin && (
@@ -200,7 +210,7 @@ const App: React.FC = () => {
           onUpdateGlobalAdsenseConfig={updateGlobalAdsenseConfig}
           onUpdateGlobalAppSettings={updateGlobalAppSettings}
           onUpdateGlobalRewardConfig={updateGlobalRewardConfig}
-          onVideoListChanged={handleVideoListChanged} // Pass new callback
+          refreshVideos={refreshVideos} // Pass the refresh callback
         />
       )}
     </div>

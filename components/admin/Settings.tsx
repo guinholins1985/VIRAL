@@ -7,11 +7,11 @@ import { getAppSettings, updateAppSettings, syncVimeoAccount, fetchVimeoUserVide
 import { AppSettings, VimeoVideoMetadata } from '../../types';
 
 interface SettingsProps {
-  onUpdateGlobalAppSettings: () => Promise<void>; // Callback to update global app settings
-  onVideoListChanged: () => Promise<void>; // Callback to trigger global video list refresh
+  onUpdateGlobalAppSettings: () => Promise<void>;
+  refreshVideos: () => Promise<void>; // Updated prop name
 }
 
-const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings, onVideoListChanged }) => {
+const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings, refreshVideos }) => {
   const [appSettings, setAppSettings] = useState<AppSettings>({
     appName: 'CASHVIRAL',
     appLogoUrl: 'https://picsum.photos/50/50?random=logo',
@@ -20,8 +20,7 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings, onVideoL
     youtubeApiKey: 'YOUR_YOUTUBE_API_KEY',
     vimeoApiKey: 'YOUR_VIMEO_API_KEY',
     geminiApiKey: 'YOUR_GEMINI_API_KEY',
-    // vimeoAccessToken: '', // Removed as per request
-    vimeoUserId: '', // Initialize new field
+    vimeoUserId: '',
   });
 
   const [loading, setLoading] = useState(false);
@@ -67,7 +66,7 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings, onVideoL
     try {
       await updateAppSettings(appSettings);
       setSaveSuccess(true);
-      await onUpdateGlobalAppSettings(); // Notify App.tsx to update global state
+      await onUpdateGlobalAppSettings();
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err) {
       setError('Falha ao salvar as configurações.');
@@ -90,7 +89,7 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings, onVideoL
     setAvailableVimeoVideos([]);
     setIsFetchingVimeoVideos(true);
     setFetchVimeoError(null);
-    setVimeoSyncSuccess(null); // Clear sync success message
+    setVimeoSyncSuccess(null);
 
     if (!validateVimeoCredentials()) {
       setIsFetchingVimeoVideos(false);
@@ -98,7 +97,7 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings, onVideoL
     }
 
     try {
-      const videos = await fetchVimeoUserVideos(appSettings.vimeoUserId!); // No accessToken
+      const videos = await fetchVimeoUserVideos(appSettings.vimeoUserId!);
       setAvailableVimeoVideos(videos);
       setVimeoSyncSuccess(true);
     } catch (err) {
@@ -121,10 +120,10 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings, onVideoL
     }
 
     try {
-      await syncVimeoAccount(appSettings.vimeoUserId!); // No accessToken
+      await syncVimeoAccount(appSettings.vimeoUserId!);
       setVimeoSyncSuccess(true);
       setVimeoSyncError(null);
-      await onVideoListChanged(); // Notify App.tsx to re-fetch videos
+      await refreshVideos(); // Trigger global video list refresh
       setAvailableVimeoVideos([]); // Clear fetched videos after automatic sync
       setTimeout(() => setVimeoSyncSuccess(null), 5000);
     } catch (err) {
@@ -139,14 +138,13 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings, onVideoL
   const handleAddManualVimeoVideo = async (video: VimeoVideoMetadata) => {
     setManualAddLoadingId(video.id);
     setVimeoSyncError(null);
-    setVimeoSyncSuccess(null); // Clear any previous sync success message
+    setVimeoSyncSuccess(null);
 
     try {
       await addSingleVimeoVideo(video);
-      await onVideoListChanged(); // Notify App.tsx to re-fetch videos
-      // Optionally remove from availableVimeoVideos list, or mark as added
-      setVimeoSyncSuccess(true); // Indicate manual add success
-      setVimeoSyncError('Vídeo Vimeo adicionado com sucesso!'); // Use error for custom message
+      await refreshVideos(); // Trigger global video list refresh
+      setVimeoSyncSuccess(true);
+      setVimeoSyncError('Vídeo Vimeo adicionado com sucesso!');
       setTimeout(() => {setVimeoSyncSuccess(null); setVimeoSyncError(null);}, 3000);
     } catch (err) {
       setVimeoSyncSuccess(false);
@@ -261,7 +259,6 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings, onVideoL
           Insira o ID do usuário Vimeo para sincronizar seus vídeos.
           (Isso é uma simulação para fins de demonstração.)
         </p>
-        {/* Removed Vimeo Access Token Input */}
         <Input
           label="ID de Usuário Vimeo"
           id="vimeoUserId"

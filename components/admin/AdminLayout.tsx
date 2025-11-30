@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, AdsenseConfig as AdsenseConfigType, AppSettings, RewardConfig } from '../../types'; // Import necessary types
+import { User, AdsenseConfig as AdsenseConfigType, AppSettings, RewardConfig } from '../../types';
 import AdminSidebar from './AdminSidebar';
 import AdminDashboard from './AdminDashboard';
 import UserManagement from './UserManagement';
@@ -13,10 +13,10 @@ import { LogoutIcon } from '../icons/HeroIcons';
 interface AdminLayoutProps {
   currentUser: User;
   onLogout: () => void;
-  onUpdateGlobalAdsenseConfig: () => Promise<void>; // Callback to update global Adsense config
-  onUpdateGlobalAppSettings: () => Promise<void>; // Callback to update global App settings
-  onUpdateGlobalRewardConfig: () => Promise<void>; // Callback to update global Reward config
-  onVideoListChanged: () => Promise<void>; // New prop: callback to trigger video list refresh
+  onUpdateGlobalAdsenseConfig: () => Promise<void>;
+  onUpdateGlobalAppSettings: () => Promise<void>;
+  onUpdateGlobalRewardConfig: () => Promise<void>;
+  refreshVideos: () => Promise<void>; // New prop: callback to trigger global video list refresh
 }
 
 enum AdminPage {
@@ -34,7 +34,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
   onUpdateGlobalAdsenseConfig,
   onUpdateGlobalAppSettings,
   onUpdateGlobalRewardConfig,
-  onVideoListChanged, // Destructure new prop
+  refreshVideos, // Destructure new prop
 }) => {
   const [currentPage, setCurrentPage] = useState<AdminPage>(AdminPage.DASHBOARD);
 
@@ -64,7 +64,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
           {currentPage === AdminPage.SETTINGS && (
             <Settings
               onUpdateGlobalAppSettings={onUpdateGlobalAppSettings}
-              onVideoListChanged={onVideoListChanged} // Pass new callback
+              refreshVideos={refreshVideos} // Pass the refresh callback
             />
           )}
         </main>

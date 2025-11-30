@@ -3,50 +3,42 @@ import Header from './Header';
 import VideoFeed from './VideoFeed';
 import UserProfile from './UserProfile';
 import RewardTracker from './RewardTracker';
-import { User, Video, RewardConfig, AdsenseConfig } from '../../types'; // Import AdsenseConfig
-import { getVideos, addVideoReward, getCurrentUser, updateUserPreferences } from '../../services/apiService';
+import { User, Video, RewardConfig, AdsenseConfig } from '../../types';
+import { addVideoReward, getCurrentUser, updateUserPreferences } from '../../services/apiService';
 import VideoPlayerPage from './VideoPlayerPage';
 import LoadingSpinner from '../shared/LoadingSpinner';
 
 interface AppLayoutProps {
   currentUser: User;
   onLogout: () => void;
-  geminiApiKey: string; // Add geminiApiKey prop
-  rewardConfig: RewardConfig; // Add rewardConfig prop
-  adsenseConfig: AdsenseConfig; // Add adsenseConfig prop
-  onVideoListChanged: () => Promise<void>; // New prop: callback to trigger video list refresh
+  geminiApiKey: string;
+  rewardConfig: RewardConfig;
+  adsenseConfig: AdsenseConfig;
+  videos: Video[]; // Now received as prop
+  loadingVideos: boolean; // Now received as prop
+  refreshVideos: () => Promise<void>; // Now received as prop
 }
 
-const AppLayout: React.FC<AppLayoutProps> = ({ currentUser: initialUser, onLogout, geminiApiKey, rewardConfig, adsenseConfig, onVideoListChanged }) => {
+const AppLayout: React.FC<AppLayoutProps> = ({ currentUser: initialUser, onLogout, geminiApiKey, rewardConfig, adsenseConfig, videos, loadingVideos, refreshVideos }) => {
   const [currentUser, setCurrentUser] = useState<User>(initialUser);
   const [currentPage, setCurrentPage] = useState<'feed' | 'profile' | 'rewards'>('feed');
-  const [videos, setVideos] = useState<Video[]>([]);
   const [currentPlayingVideo, setCurrentPlayingVideo] = useState<Video | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Removed internal loading state for videos as it's now a prop
   const [rewardMessage, setRewardMessage] = useState<string | null>(null);
 
-  const fetchVideos = useCallback(async () => {
-    setLoading(true);
-    const fetchedVideos = await getVideos();
-    setVideos(fetchedVideos);
-    setLoading(false);
-  }, []);
-
-  useEffect(() => {
-    // This effect should listen to onVideoListChanged, or be called when onVideoListChanged is fired from parent
-    // The parent (App.tsx) calls onVideoListChanged, which means it expects AppLayout to handle the refresh.
-    // So, we use a separate effect that runs when onVideoListChanged is called (by passing it as a dep)
-    fetchVideos();
-  }, [fetchVideos, onVideoListChanged]); // onVideoListChanged added as a dependency to trigger fetch
+  // Removed internal fetchVideos useCallback as it's now a prop (refreshVideos)
+  // Removed useEffect for fetching videos as it's handled by parent App.tsx
 
   const handleVideoWatchComplete = useCallback(async (videoId: string) => {
     const updatedUser = await addVideoReward(currentUser.id, videoId);
     if (updatedUser) {
       setCurrentUser(updatedUser);
       setRewardMessage(`Você ganhou R$${(updatedUser.balance - currentUser.balance).toFixed(2)}!`);
+      // Also refresh the global video list to update view counts (optional, but good for consistency)
+      await refreshVideos();
       setTimeout(() => setRewardMessage(null), 3000);
     }
-  }, [currentUser]);
+  }, [currentUser, refreshVideos]); // refreshVideos added as dependency
 
   const handleUpdatePreferences = useCallback(async (preferences: string[]) => {
     const updatedUser = await updateUserPreferences(currentUser.id, preferences);
@@ -65,7 +57,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ currentUser: initialUser, onLogou
     setCurrentPlayingVideo(video);
   };
 
-  if (loading) {
+  if (loadingVideos) { // Use prop loadingVideos
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-900">
         <LoadingSpinner size="lg" />
@@ -82,7 +74,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ currentUser: initialUser, onLogou
         onNavigate={setCurrentPage}
         currentPage={currentPage}
       />
-      <main className="flex-grow mt-[64px] pb-16 md:pb-0"> {/* Adjust padding for fixed header and potential mobile nav */}
+      <main className="flex-grow mt-[64px] pb-16 md:pb-0">
         {rewardMessage && (
           <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-bounce">
             {rewardMessage}
@@ -95,18 +87,20 @@ const AppLayout: React.FC<AppLayoutProps> = ({ currentUser: initialUser, onLogou
             onVideoEnded={() => handleVideoWatchComplete(currentPlayingVideo.id)}
             onClose={handleNavigateToFeed}
             currentUser={currentUser}
-            minWatchTimeSeconds={rewardConfig.minWatchTimeSeconds} // Pass updated min watch time
+            minWatchTimeSeconds={rewardConfig.minWatchTimeSeconds}
           />
         ) : (
           <div className="p-4 pt-8 md:p-8">
             {currentPage === 'feed' && (
               <VideoFeed
-                videos={videos}
+                videos={videos} // Pass videos from prop
+                loading={loadingVideos} // Pass loading state from prop
                 onOpenVideo={handleOpenVideo}
                 currentUser={currentUser}
                 onUpdatePreferences={handleUpdatePreferences}
-                geminiApiKey={geminiApiKey} // Pass updated Gemini API key
-                adsenseConfig={adsenseConfig} // Pass updated adsense config
+                geminiApiKey={geminiApiKey}
+                adsenseConfig={adsenseConfig}
+                refreshVideos={refreshVideos} // Pass the refresh callback
               />
             )}
             {currentPage === 'profile' && (
