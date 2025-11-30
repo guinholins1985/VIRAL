@@ -317,45 +317,46 @@ export const updateAppSettings = async (settings: AppSettings): Promise<void> =>
 
 export const syncVimeoAccount = async (accessToken: string, vimeoUserId?: string): Promise<boolean> => {
   await delay(1500); // Simulate API call
-  console.log('Attempting to sync Vimeo account with token:', accessToken, 'and user ID:', vimeoUserId);
+  console.log('Tentando sincronizar conta Vimeo com token:', accessToken, 'e ID de usuário:', vimeoUserId);
 
   if (!accessToken || accessToken.length < 10) { // Basic validation
-    console.error('Vimeo account sync failed (mock): Token de acesso Vimeo inválido.');
+    console.error('Falha na sincronização da conta Vimeo (mock): Token de acesso Vimeo inválido.');
     throw new Error('Token de acesso Vimeo inválido.');
   }
   if (!vimeoUserId) {
-    console.error('Vimeo account sync failed (mock): ID de usuário Vimeo não fornecido.');
+    console.error('Falha na sincronização da conta Vimeo (mock): ID de usuário Vimeo não fornecido.');
     throw new Error('ID de usuário Vimeo não fornecido.');
   }
 
-  // Simulate API call to Vimeo to fetch videos for this user
-  let videos: Video[] = JSON.parse(localStorage.getItem(localStorageVideosKey) || '[]');
+  // Generate a new set of mock Vimeo videos specifically for this user
+  const generateMockVimeoVideosForUser = (userId: string): Video[] => {
+    const numVideos = Math.floor(Math.random() * (5 - 3 + 1)) + 3; // 3 to 5 videos
+    const videos: Video[] = [];
+    for (let i = 1; i <= numVideos; i++) {
+      const videoId = `${Math.floor(Math.random() * 900000000) + 100000000}`; // Random 9-digit Vimeo-like ID
+      videos.push({
+        id: `v_vimeo_sync_${userId}_${videoId}`,
+        title: `Vimeo de ${userId}: Vídeo Automatizado #${i}`,
+        thumbnail: `https://i.vimeocdn.com/video/${videoId}_295x166.jpg`, // Mock Vimeo thumbnail format
+        duration: Math.floor(Math.random() * (600 - 120 + 1)) + 120, // 2-10 minutes
+        source: 'vimeo',
+        url: `https://vimeo.com/${videoId}`,
+        views: Math.floor(Math.random() * 5000) + 100,
+        averageWatchTime: Math.floor(Math.random() * 100) + 50,
+        likes: Math.floor(Math.random() * 200) + 10,
+        isActive: true,
+        uploadDate: new Date().toISOString(),
+        category: 'Vimeo Sincronizado',
+      });
+    }
+    return videos;
+  };
 
-  // Check if a video from this user ID is already mocked to avoid duplicates on repeated syncs
-  const existingVimeoVideoFromUser = videos.find(v => v.source === 'vimeo' && v.url.includes(vimeoUserId!));
+  const newVimeoVideos = generateMockVimeoVideosForUser(vimeoUserId);
 
-  if (!existingVimeoVideoFromUser) {
-    const newVimeoVideo: Video = {
-      id: `v_vimeo_user_${vimeoUserId}_${Date.now()}`,
-      title: `Vimeo Sincronizado: Vídeos do Usuário ${vimeoUserId}`,
-      thumbnail: `https://picsum.photos/320/180?random=${vimeoUserId}`,
-      duration: Math.floor(Math.random() * (600 - 120 + 1)) + 120, // Random duration between 120-600s
-      source: 'vimeo',
-      url: `https://vimeo.com/${vimeoUserId}/videos`, // Mock URL for a user's videos
-      views: Math.floor(Math.random() * 1000) + 100,
-      averageWatchTime: Math.floor(Math.random() * 60) + 30,
-      likes: Math.floor(Math.random() * 50) + 5,
-      isActive: true,
-      uploadDate: new Date().toISOString(),
-      category: 'Sincronizado',
-    };
-    videos.push(newVimeoVideo);
-    localStorage.setItem(localStorageVideosKey, JSON.stringify(videos));
-  } else {
-    console.log(`Vimeo user ${vimeoUserId} already has videos mocked. Simulating update.`);
-    // In a real scenario, you'd update existing videos here
-  }
-
-  console.log(`Vimeo account for user ${vimeoUserId} synced successfully (mock)!`);
+  // Overwrite the entire video list in localStorage with ONLY the newly generated Vimeo videos
+  localStorage.setItem(localStorageVideosKey, JSON.stringify(newVimeoVideos));
+  
+  console.log(`Conta Vimeo para o usuário ${vimeoUserId} sincronizada com sucesso (mock)! ${newVimeoVideos.length} vídeos adicionados.`);
   return true;
 };

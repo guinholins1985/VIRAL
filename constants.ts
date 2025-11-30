@@ -78,54 +78,6 @@ export const MOCK_VIDEOS = [
     likes: 30,
     isActive: true,
   },
-  {
-    id: 'v_4',
-    title: 'Top 10 Gaming Moments of the Year',
-    thumbnail: 'https://picsum.photos/320/180?random=4',
-    duration: 600,
-    source: 'youtube',
-    url: 'https://www.youtube.com/watch?v=some_gaming_video', // Placeholder
-    views: 2500,
-    averageWatchTime: 300,
-    likes: 150,
-    isActive: true,
-  },
-  {
-    id: 'v_5',
-    title: 'Cooking Masterclass: Italian Pasta',
-    thumbnail: 'https://picsum.photos/320/180?random=5',
-    duration: 900,
-    source: 'youtube',
-    url: 'https://www.youtube.com/watch?v=some_cooking_video', // Placeholder
-    views: 1800,
-    averageWatchTime: 450,
-    likes: 80,
-    isActive: true,
-  },
-  {
-    id: 'v_6',
-    title: 'Abstract Art Process',
-    thumbnail: 'https://picsum.photos/320/180?random=6',
-    duration: 450,
-    source: 'vimeo',
-    url: 'https://vimeo.com/some_art_video', // Placeholder
-    views: 400,
-    averageWatchTime: 200,
-    likes: 15,
-    isActive: false, // Example of an inactive video
-  },
-  {
-    id: 'v_vimeo_250829792', // Adjusted ID to match user's previous request context
-    title: 'Vimeo: Beautiful Nature Scene',
-    thumbnail: 'https://i.vimeocdn.com/video/784158406_1280x720.jpg', // Placeholder thumbnail for the given Vimeo ID
-    duration: 180,
-    source: 'vimeo',
-    url: 'https://vimeo.com/250829792',
-    views: 1500,
-    averageWatchTime: 100,
-    likes: 75,
-    isActive: true,
-  },
 ];
 
 export const MOCK_ADMIN_DASHBOARD_DATA = {

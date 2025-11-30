@@ -226,7 +226,7 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings }) => {
         <Button onClick={handleSyncVimeo} disabled={vimeoSyncLoading} className="py-2.5">
           {vimeoSyncLoading ? <LoadingSpinner size="sm" color="border-white" /> : 'Sincronizar Conta Vimeo'}
         </Button>
-        {vimeoSyncSuccess === true && <p className="text-green-400 text-sm mt-2 flex items-center"><VideoIcon className="h-5 w-5 mr-1"/> Sincronização de conta Vimeo bem-sucedida! Novos vídeos adicionados/atualizados.</p>}
+        {vimeoSyncSuccess === true && <p className="text-green-400 text-sm mt-2 flex items-center"><VideoIcon className="h-5 w-5 mr-1"/> Sincronização de conta Vimeo bem-sucedida! Vídeos da conta foram adicionados/atualizados.</p>}
         {vimeoSyncSuccess === false && vimeoSyncError && <p className="text-red-500 text-sm mt-2">{vimeoSyncError}</p>}
       </div>
 
