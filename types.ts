@@ -5,7 +5,7 @@ export interface User {
   balance: number;
   isActive: boolean;
   isAdmin: boolean;
-  preferences: string[];
+  // preferences: string[]; // Removed as AI recommendation is removed
   password?: string; // Only for mock purposes, not for real apps
 }
 
@@ -96,7 +96,7 @@ export interface AppSettings {
   termsOfServiceUrl: string;
   // youtubeApiKey: string; // Removed as per request
   vimeoApiKey: string;
-  geminiApiKey: string;
+  // geminiApiKey: string; // Removed as AI recommendation is removed
   vimeoUserId?: string; // Added for Vimeo sync
 }
 

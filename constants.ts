@@ -1,6 +1,6 @@
 // Replace with your actual Gemini API Key from environment variables
 // For local development, you might set it in your .env file
-export const GEMINI_API_KEY: string = process.env.API_KEY || 'YOUR_GEMINI_API_KEY';
+// export const GEMINI_API_KEY: string = process.env.API_KEY || 'YOUR_GEMINI_API_KEY'; // Removed as AI recommendation is removed
 
 export const REWARD_PER_VIDEO: number = 0.10; // Value in virtual currency
 export const MIN_WATCH_TIME_SECONDS: number = 30; // Minimum time in seconds to watch a video for rewards
@@ -16,7 +16,7 @@ export const MOCK_USERS = [
     balance: 15.50,
     isActive: true,
     isAdmin: false,
-    preferences: ['comedy', 'tutorials'],
+    // preferences: ['comedy', 'tutorials'], // Removed as AI recommendation is removed
     password: 'password123'
   },
   {
@@ -26,7 +26,7 @@ export const MOCK_USERS = [
     balance: 7.25,
     isActive: true,
     isAdmin: false,
-    preferences: ['gaming', 'music'],
+    // preferences: ['gaming', 'music'], // Removed as AI recommendation is removed
     password: 'password123'
   },
   {
@@ -36,7 +36,7 @@ export const MOCK_USERS = [
     balance: 0.00,
     isActive: true,
     isAdmin: true,
-    preferences: [],
+    // preferences: [], // Removed as AI recommendation is removed
     password: 'a12' // Updated admin password
   },
 ];
@@ -49,7 +49,7 @@ export const MOCK_VIDEOS = [
     thumbnail: 'https://i.vimeocdn.com/video/76979871_295x166.jpg', // Example Vimeo ID
     duration: 240,
     source: 'vimeo',
-    url: 'https://vimeo.com/76979871', 
+    url: 'https://vimeo.com/76979871',
     views: 100,
     averageWatchTime: 100,
     likes: 10,
@@ -250,7 +250,7 @@ export const MOCK_VIDEOS = [
     url: 'https://vimeo.com/811568675',
     views: 200000, averageWatchTime: 300, likes: 15000, isActive: true, category: 'humor',
   },
-  // START - New Vimeo videos added as per request (77 unique videos)
+  // START - New Vimeo videos added as per request (77 unique videos from the provided list)
   { id: 'v_1139312677', title: 'Vimeo Adicionado: 1139312677', thumbnail: 'https://i.vimeocdn.com/video/1139312677_295x166.jpg', duration: 250, source: 'vimeo', url: 'https://vimeo.com/1139312677', views: 8500, averageWatchTime: 200, likes: 150, isActive: true, category: 'vlog' },
   { id: 'v_1139310657', title: 'Vimeo Adicionado: 1139310657', thumbnail: 'https://i.vimeocdn.com/video/1139310657_295x166.jpg', duration: 180, source: 'vimeo', url: 'https://vimeo.com/1139310657', views: 9200, averageWatchTime: 160, likes: 180, isActive: true, category: 'viagem' },
   { id: 'v_1139310608', title: 'Vimeo Adicionado: 1139310608', thumbnail: 'https://i.vimeocdn.com/video/1139310608_295x166.jpg', duration: 320, source: 'vimeo', url: 'https://vimeo.com/1139310608', views: 11000, averageWatchTime: 280, likes: 220, isActive: true, category: 'arte' },
@@ -417,6 +417,6 @@ export const MOCK_APP_SETTINGS = {
   privacyPolicyUrl: '#',
   termsOfServiceUrl: '#',
   vimeoApiKey: VIMEO_API_KEY,
-  geminiApiKey: GEMINI_API_KEY,
+  // geminiApiKey: GEMINI_API_KEY, // Removed as AI recommendation is removed
   vimeoUserId: '250829792', // Added for Vimeo sync
 };

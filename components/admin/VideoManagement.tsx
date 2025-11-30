@@ -43,7 +43,7 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ refreshVideos }) => {
     setCurrentVideo({
       title: '',
       url: '',
-      thumbnail: '',
+      thumbnail: 'https://picsum.photos/320/180?random=new', // Default placeholder thumbnail
       duration: 0,
       source: 'vimeo', // Default source changed from 'youtube' to 'vimeo'
       isActive: true,
@@ -88,7 +88,7 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ refreshVideos }) => {
         setLoading(false);
       }
     } else {
-      setError('Por favor, preencha todos os campos obrigatórios e selecione uma fonte válida (Vimeo ou Interno).');
+      setError('Por favor, preencha todos os campos obrigatórios (Título, URL, Miniatura, Duração, Fonte).');
     }
   };
 
@@ -209,7 +209,7 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ refreshVideos }) => {
       >
         <Input label="Título" id="video-title" name="title" value={currentVideo?.title || ''} onChange={handleChange} error={error ? 'Campo obrigatório' : undefined} />
         <Input label="URL do Vídeo" id="video-url" name="url" value={currentVideo?.url || ''} onChange={handleChange} error={error ? 'Campo obrigatório' : undefined} />
-        <Input label="URL da Miniatura" id="video-thumbnail" name="thumbnail" value={currentVideo?.thumbnail || ''} onChange={handleChange} error={error ? 'Campo obrigatório' : undefined} />
+        <Input label="URL da Miniatura" id="video-thumbnail" name="thumbnail" value={currentVideo?.thumbnail || ''} onChange={handleChange} error={error ? 'Campo obrigatório' : undefined} placeholder="Ex: https://i.vimeocdn.com/video/..." />
         <Input label="Duração (segundos)" id="video-duration" name="duration" type="number" value={currentVideo?.duration || 0} onChange={handleChange} error={error ? 'Campo obrigatório' : undefined} />
         <div className="mb-4">
           <label htmlFor="video-source" className="block text-gray-300 text-sm font-bold mb-2">

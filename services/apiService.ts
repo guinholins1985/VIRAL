@@ -80,7 +80,7 @@ export const register = async (name: string, email: string, password: string): P
     balance: 0,
     isActive: true,
     isAdmin: false,
-    preferences: [],
+    // preferences: [], // Removed as AI recommendation is removed
   };
   users.push(newUser);
   localStorage.setItem(localStorageUsersKey, JSON.stringify(users));
@@ -141,20 +141,21 @@ export const addVideoReward = async (userId: string, videoId: string): Promise<U
   return null;
 };
 
-export const updateUserPreferences = async (userId: string, preferences: string[]): Promise<User | null> => {
-  await delay(200);
-  const users: User[] = JSON.parse(localStorage.getItem(localStorageUsersKey) || '[]');
-  const userIndex = users.findIndex((u) => u.id === userId);
-  if (userIndex !== -1) {
-    users[userIndex].preferences = preferences;
-    localStorage.setItem(localStorageUsersKey, JSON.stringify(users));
-    if (users[userIndex].id === (JSON.parse(localStorage.getItem(localStorageKey) || '{}') as User).id) {
-        localStorage.setItem(localStorageKey, JSON.stringify(users[userIndex]));
-    }
-    return users[userIndex];
-  }
-  return null;
-};
+// Removed updateUserPreferences as preferences are no longer managed
+// export const updateUserPreferences = async (userId: string, preferences: string[]): Promise<User | null> => {
+//   await delay(200);
+//   const users: User[] = JSON.parse(localStorage.getItem(localStorageUsersKey) || '[]');
+//   const userIndex = users.findIndex((u) => u.id === userId);
+//   if (userIndex !== -1) {
+//     users[userIndex].preferences = preferences;
+//     localStorage.setItem(localStorageUsersKey, JSON.stringify(users));
+//     if (users[userIndex].id === (JSON.parse(localStorage.getItem(localStorageKey) || '{}') as User).id) {
+//         localStorage.setItem(localStorageKey, JSON.stringify(users[userIndex]));
+//     }
+//     return users[userIndex];
+//   }
+//   return null;
+// };
 
 
 // Admin Panel APIs
