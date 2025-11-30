@@ -6,7 +6,11 @@ import { CogIcon, AdjustmentsIcon, LinkIcon, VideoIcon } from '../icons/HeroIcon
 import { getAppSettings, updateAppSettings, syncVimeoAccount } from '../../services/apiService';
 import { AppSettings } from '../../types';
 
-const Settings: React.FC = () => {
+interface SettingsProps {
+  onUpdateGlobalAppSettings: () => Promise<void>; // Callback to update global app settings
+}
+
+const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings }) => {
   const [appSettings, setAppSettings] = useState<AppSettings>({
     appName: 'CASHVIRAL',
     appLogoUrl: 'https://picsum.photos/50/50?random=logo',
@@ -55,6 +59,7 @@ const Settings: React.FC = () => {
     try {
       await updateAppSettings(appSettings);
       setSaveSuccess(true);
+      await onUpdateGlobalAppSettings(); // Notify App.tsx to update global state
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err) {
       setError('Falha ao salvar as configurações.');

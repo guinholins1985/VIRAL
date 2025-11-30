@@ -1,5 +1,5 @@
-import { User, Video, RewardTransaction, WithdrawalRequest, AdminDashboardData, AdsenseConfig, AppSettings } from '../types';
-import { MOCK_USERS, MOCK_VIDEOS, REWARD_PER_VIDEO, MIN_WATCH_TIME_SECONDS, MOCK_ADMIN_DASHBOARD_DATA, MOCK_WITHDRAWAL_REQUESTS, ADSENSE_MOCK_DATA, MOCK_APP_SETTINGS } from '../constants';
+import { User, Video, RewardTransaction, WithdrawalRequest, AdminDashboardData, AdsenseConfig, AppSettings, RewardConfig } from '../types';
+import { MOCK_USERS, MOCK_VIDEOS, MOCK_ADMIN_DASHBOARD_DATA, MOCK_WITHDRAWAL_REQUESTS, ADSENSE_MOCK_DATA, MOCK_APP_SETTINGS, REWARD_PER_VIDEO, MIN_WATCH_TIME_SECONDS } from '../constants';
 
 const localStorageKey = 'currentUser';
 const localStorageUsersKey = 'allUsers';
@@ -109,8 +109,9 @@ export const addVideoReward = async (userId: string, videoId: string): Promise<U
   await delay(300);
   const users: User[] = JSON.parse(localStorage.getItem(localStorageUsersKey) || '[]');
   const videos: Video[] = JSON.parse(localStorage.getItem(localStorageVideosKey) || '[]');
-  const rewardConfig = JSON.parse(localStorage.getItem(localStorageRewardConfigKey) || '{}');
-  const rewardAmount = rewardConfig.rewardPerVideo || REWARD_PER_VIDEO;
+  const rewardConfig: RewardConfig = JSON.parse(localStorage.getItem(localStorageRewardConfigKey) || '{}');
+  const rewardAmount = rewardConfig.rewardPerVideo; // Use from config
+  const minWatchTime = rewardConfig.minWatchTimeSeconds; // Use from config
 
   const userIndex = users.findIndex((u) => u.id === userId);
   const videoIndex = videos.findIndex((v) => v.id === videoId);
@@ -232,12 +233,12 @@ export const deleteVideo = async (videoId: string): Promise<boolean> => {
   return videos.length < initialLength;
 };
 
-export const getRewardConfig = async (): Promise<{ rewardPerVideo: number; minWatchTimeSeconds: number }> => {
+export const getRewardConfig = async (): Promise<RewardConfig> => {
   await delay(200);
   return JSON.parse(localStorage.getItem(localStorageRewardConfigKey) || '{}');
 };
 
-export const updateRewardConfig = async (config: { rewardPerVideo: number; minWatchTimeSeconds: number }): Promise<void> => {
+export const updateRewardConfig = async (config: RewardConfig): Promise<void> => {
   await delay(200);
   localStorage.setItem(localStorageRewardConfigKey, JSON.stringify(config));
 };

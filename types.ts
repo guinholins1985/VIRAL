@@ -36,8 +36,8 @@ export interface RewardTransaction {
 
 export interface WithdrawalRequest {
   id: string;
-  userId: string;
   userName: string;
+  userId: string;
   amount: number;
   method: 'PIX' | 'MercadoPago' | 'PagBank' | 'Saldo Virtual';
   status: 'pending' | 'approved' | 'rejected';
@@ -90,4 +90,9 @@ export interface AppSettings {
   vimeoApiKey: string;
   geminiApiKey: string;
   vimeoAccessToken?: string; // Added for Vimeo sync
+}
+
+export interface RewardConfig {
+  rewardPerVideo: number;
+  minWatchTimeSeconds: number;
 }

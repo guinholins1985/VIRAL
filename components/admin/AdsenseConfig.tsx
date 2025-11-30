@@ -8,7 +8,11 @@ import { ChartBarIcon, CreditCardIcon, CogIcon, PlusCircleIcon, TrashIcon } from
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { AD_PLACEMENT_OPTIONS } from '../../constants'; // Import predefined ad placement options
 
-const AdsenseConfig: React.FC = () => {
+interface AdsenseConfigProps {
+  onUpdateGlobalAdsenseConfig: () => Promise<void>; // Callback to update global Adsense config
+}
+
+const AdsenseConfig: React.FC<AdsenseConfigProps> = ({ onUpdateGlobalAdsenseConfig }) => {
   const [adsenseConfig, setAdsenseConfig] = useState<AdsenseConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -108,6 +112,7 @@ const AdsenseConfig: React.FC = () => {
       try {
         await updateAdsenseConfig(adsenseConfig);
         setSaveSuccess(true);
+        await onUpdateGlobalAdsenseConfig(); // Notify App.tsx to update global state
         setTimeout(() => setSaveSuccess(false), 3000);
       } catch (err) {
         setError('Falha ao salvar a configuração do AdSense.');

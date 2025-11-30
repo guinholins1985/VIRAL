@@ -12,19 +12,20 @@ interface VideoFeedProps {
   onOpenVideo: (video: Video) => void;
   currentUser: User;
   onUpdatePreferences: (preferences: string[]) => void;
+  geminiApiKey: string; // Accept geminiApiKey as prop
 }
 
-const VideoFeed: React.FC<VideoFeedProps> = ({ videos, onOpenVideo, currentUser, onUpdatePreferences }) => {
+const VideoFeed: React.FC<VideoFeedProps> = ({ videos, onOpenVideo, currentUser, onUpdatePreferences, geminiApiKey }) => {
   const [recommendation, setRecommendation] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [preferenceInput, setPreferenceInput] = useState<string>('');
 
   const fetchRecommendation = useCallback(async (preferences: string[]) => {
     setAiLoading(true);
-    const rec = await getRecommendation(preferences);
+    const rec = await getRecommendation(preferences, geminiApiKey); // Pass geminiApiKey to service
     setRecommendation(rec);
     setAiLoading(false);
-  }, []);
+  }, [geminiApiKey]); // Add geminiApiKey to dependencies
 
   useEffect(() => {
     if (currentUser.preferences && currentUser.preferences.length > 0) {
@@ -33,21 +34,21 @@ const VideoFeed: React.FC<VideoFeedProps> = ({ videos, onOpenVideo, currentUser,
       setRecommendation("Parece que você é novo por aqui! Assista alguns vídeos ou nos diga seus interesses para obter recomendações personalizadas.");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUser.preferences]); // Only re-fetch if preferences change
+  }, [currentUser.preferences, fetchRecommendation]); // Only re-fetch if preferences or fetchRecommendation change
 
   const handleAddPreference = () => {
     if (preferenceInput.trim() && !currentUser.preferences.includes(preferenceInput.trim().toLowerCase())) {
       const newPreferences = [...currentUser.preferences, preferenceInput.trim().toLowerCase()];
       onUpdatePreferences(newPreferences);
       setPreferenceInput('');
-      fetchRecommendation(newPreferences); // Re-fetch recommendation with new preferences
+      // fetchRecommendation(newPreferences); // Recommendation will re-fetch due to currentUser.preferences dependency
     }
   };
 
   const handleRemovePreference = (prefToRemove: string) => {
     const newPreferences = currentUser.preferences.filter(pref => pref !== prefToRemove);
     onUpdatePreferences(newPreferences);
-    fetchRecommendation(newPreferences); // Re-fetch recommendation
+    // fetchRecommendation(newPreferences); // Recommendation will re-fetch due to currentUser.preferences dependency
   };
 
 

@@ -1,14 +1,14 @@
 import { GoogleGenAI } from "@google/genai";
-import { GEMINI_API_KEY } from "../constants";
+// Removed import for GEMINI_API_KEY from constants, now passed as argument
 
-export const getRecommendation = async (userPreferences: string[]): Promise<string> => {
-  if (!GEMINI_API_KEY || GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY') {
+export const getRecommendation = async (userPreferences: string[], geminiApiKey: string): Promise<string> => {
+  if (!geminiApiKey || geminiApiKey === 'YOUR_GEMINI_API_KEY') {
     console.warn("Gemini API Key is not configured. Returning mock recommendation.");
     return `Com base nos seus interesses em ${userPreferences.join(', ')}, você pode gostar de assistir a um vídeo sobre técnicas avançadas de JavaScript ou uma nova análise de jogo indie!`;
   }
 
   try {
-    const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+    const ai = new GoogleGenAI({ apiKey: geminiApiKey }); // Use passed geminiApiKey
     const model = "gemini-2.5-flash"; // Using a general flash model for text recommendations
 
     const prompt = `A user enjoys videos about the following topics: ${userPreferences.join(', ')}.

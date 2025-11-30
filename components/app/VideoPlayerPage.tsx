@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Video, User } from '../../types';
-import { MIN_WATCH_TIME_SECONDS } from '../../constants';
 import LoadingSpinner from '../shared/LoadingSpinner';
 import Button from '../shared/Button';
 import { XCircleIcon, CheckCircleIcon } from '../icons/HeroIcons';
@@ -10,9 +9,10 @@ interface VideoPlayerPageProps {
   onVideoEnded: () => void;
   onClose: () => void;
   currentUser: User;
+  minWatchTimeSeconds: number; // Accept minWatchTimeSeconds as prop
 }
 
-const VideoPlayerPage: React.FC<VideoPlayerPageProps> = ({ video, onVideoEnded, onClose, currentUser }) => {
+const VideoPlayerPage: React.FC<VideoPlayerPageProps> = ({ video, onVideoEnded, onClose, currentUser, minWatchTimeSeconds }) => {
   const [watchedTime, setWatchedTime] = useState(0);
   const [rewardClaimed, setRewardClaimed] = useState(false);
   const [isLoadingEmbed, setIsLoadingEmbed] = useState(true);
@@ -56,7 +56,7 @@ const VideoPlayerPage: React.FC<VideoPlayerPageProps> = ({ video, onVideoEnded, 
   }, [video.id]);
 
   useEffect(() => {
-    if (watchedTime >= MIN_WATCH_TIME_SECONDS && !rewardClaimed) {
+    if (watchedTime >= minWatchTimeSeconds && !rewardClaimed) { // Use prop minWatchTimeSeconds
       onVideoEnded();
       setRewardClaimed(true);
       if (intervalRef.current) {
@@ -64,7 +64,7 @@ const VideoPlayerPage: React.FC<VideoPlayerPageProps> = ({ video, onVideoEnded, 
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [watchedTime, rewardClaimed, onVideoEnded]); // `onVideoEnded` added to dependencies
+  }, [watchedTime, rewardClaimed, onVideoEnded, minWatchTimeSeconds]); // `minWatchTimeSeconds` added to dependencies
   // `onVideoEnded` should now be in deps as it causes re-renders based on parent user object changes.
   // It's memoized in AppLayout, so adding it here is safe and correct.
 
@@ -72,7 +72,7 @@ const VideoPlayerPage: React.FC<VideoPlayerPageProps> = ({ video, onVideoEnded, 
     setIsLoadingEmbed(false);
   }, []);
 
-  const progressPercentage = Math.min((watchedTime / MIN_WATCH_TIME_SECONDS) * 100, 100);
+  const progressPercentage = Math.min((watchedTime / minWatchTimeSeconds) * 100, 100);
 
   return (
     <div className="fixed inset-0 bg-gray-950 flex flex-col items-center justify-center z-50 p-2 sm:p-4 md:p-8">
@@ -117,7 +117,7 @@ const VideoPlayerPage: React.FC<VideoPlayerPageProps> = ({ video, onVideoEnded, 
                   <CheckCircleIcon className="h-5 w-5 mr-1" /> Recompensa Resgatada!
                 </span>
               ) : (
-                `Assistindo: ${watchedTime}s / ${MIN_WATCH_TIME_SECONDS}s para recompensa`
+                `Assistindo: ${watchedTime}s / ${minWatchTimeSeconds}s para recompensa`
               )}
             </p>
           </div>

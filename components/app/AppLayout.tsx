@@ -3,7 +3,7 @@ import Header from './Header';
 import VideoFeed from './VideoFeed';
 import UserProfile from './UserProfile';
 import RewardTracker from './RewardTracker';
-import { User, Video } from '../../types';
+import { User, Video, RewardConfig } from '../../types';
 import { getVideos, addVideoReward, getCurrentUser, updateUserPreferences } from '../../services/apiService';
 import VideoPlayerPage from './VideoPlayerPage';
 import LoadingSpinner from '../shared/LoadingSpinner';
@@ -11,9 +11,11 @@ import LoadingSpinner from '../shared/LoadingSpinner';
 interface AppLayoutProps {
   currentUser: User;
   onLogout: () => void;
+  geminiApiKey: string; // Add geminiApiKey prop
+  rewardConfig: RewardConfig; // Add rewardConfig prop
 }
 
-const AppLayout: React.FC<AppLayoutProps> = ({ currentUser: initialUser, onLogout }) => {
+const AppLayout: React.FC<AppLayoutProps> = ({ currentUser: initialUser, onLogout, geminiApiKey, rewardConfig }) => {
   const [currentUser, setCurrentUser] = useState<User>(initialUser);
   const [currentPage, setCurrentPage] = useState<'feed' | 'profile' | 'rewards'>('feed');
   const [videos, setVideos] = useState<Video[]>([]);
@@ -88,17 +90,24 @@ const AppLayout: React.FC<AppLayoutProps> = ({ currentUser: initialUser, onLogou
             onVideoEnded={() => handleVideoWatchComplete(currentPlayingVideo.id)}
             onClose={handleNavigateToFeed}
             currentUser={currentUser}
+            minWatchTimeSeconds={rewardConfig.minWatchTimeSeconds} // Pass updated min watch time
           />
         ) : (
           <div className="p-4 pt-8 md:p-8">
             {currentPage === 'feed' && (
-              <VideoFeed videos={videos} onOpenVideo={handleOpenVideo} currentUser={currentUser} onUpdatePreferences={handleUpdatePreferences} />
+              <VideoFeed
+                videos={videos}
+                onOpenVideo={handleOpenVideo}
+                currentUser={currentUser}
+                onUpdatePreferences={handleUpdatePreferences}
+                geminiApiKey={geminiApiKey} // Pass updated Gemini API key
+              />
             )}
             {currentPage === 'profile' && (
               <UserProfile currentUser={currentUser} onUserUpdate={setCurrentUser} onUpdatePreferences={handleUpdatePreferences} />
             )}
             {currentPage === 'rewards' && (
-              <RewardTracker currentUser={currentUser} />
+              <RewardTracker currentUser={currentUser} rewardConfig={rewardConfig} />
             )}
           </div>
         )}

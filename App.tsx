@@ -3,8 +3,8 @@ import LandingPage from './components/landing/LandingPage';
 import AuthPage from './components/auth/AuthPage';
 import AppLayout from './components/app/AppLayout';
 import AdminLayout from './components/admin/AdminLayout';
-import { User, AdsenseConfig } from './types';
-import { getCurrentUser, login as apiLogin, register as apiRegister, getAdsenseConfig } from './services/apiService';
+import { User, AdsenseConfig, AppSettings, RewardConfig } from './types';
+import { getCurrentUser, login as apiLogin, register as apiRegister, getAdsenseConfig, getAppSettings, getRewardConfig } from './services/apiService';
 
 // Define the available routes/pages
 enum AppRoute {
@@ -19,6 +19,11 @@ const App: React.FC = () => {
   const [currentRoute, setCurrentRoute] = useState<AppRoute>(AppRoute.LANDING);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Global states for admin configurations
+  const [adsenseConfig, setAdsenseConfig] = useState<AdsenseConfig | null>(null);
+  const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
+  const [rewardConfig, setRewardConfig] = useState<RewardConfig | null>(null);
 
   const checkAuth = useCallback(async () => {
     setLoading(true);
@@ -36,53 +41,64 @@ const App: React.FC = () => {
     setLoading(false);
   }, []);
 
+  // Function to refresh global AdsenseConfig state
+  const updateGlobalAdsenseConfig = useCallback(async () => {
+    const config = await getAdsenseConfig();
+    setAdsenseConfig(config);
+  }, []);
+
+  // Function to refresh global AppSettings state
+  const updateGlobalAppSettings = useCallback(async () => {
+    const settings = await getAppSettings();
+    setAppSettings(settings);
+  }, []);
+
+  // Function to refresh global RewardConfig state
+  const updateGlobalRewardConfig = useCallback(async () => {
+    const config = await getRewardConfig();
+    setRewardConfig(config);
+  }, []);
+
+
   useEffect(() => {
+    // Initial fetch for all global configs
+    const fetchAllConfigs = async () => {
+      await updateGlobalAdsenseConfig();
+      await updateGlobalAppSettings();
+      await updateGlobalRewardConfig();
+    };
+    
     checkAuth();
+    fetchAllConfigs();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Effect to dynamically inject AdSense verification codes and the main AdSense script into the document head
+  // Effect to dynamically inject AdSense verification meta tags
   useEffect(() => {
     const cleanupElements: HTMLElement[] = []; // Collect elements to remove on cleanup
 
-    const injectAdsenseElements = async () => {
-      try {
-        const adsenseConfig: AdsenseConfig = await getAdsenseConfig();
+    if (adsenseConfig && adsenseConfig.verificationCodes) {
+      adsenseConfig.verificationCodes.forEach(code => {
+        if (code.trim()) {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(code, 'text/html');
+          const metaTag = doc.head.querySelector('meta');
 
-        // 1. Inject AdSense Verification Meta Tags
-        adsenseConfig.verificationCodes.forEach(code => {
-          if (code.trim()) { // Ensure code is not empty
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(code, 'text/html');
-            const metaTag = doc.head.querySelector('meta');
-
-            if (metaTag && !document.head.querySelector(`meta[name="${metaTag.name}"][content="${metaTag.content}"]`)) {
+          if (metaTag) {
+            // Check if a meta tag with the same name and content already exists
+            const existingMeta = document.head.querySelector(`meta[name="${metaTag.name}"][content="${metaTag.content}"]`);
+            if (!existingMeta) {
               document.head.appendChild(metaTag);
               cleanupElements.push(metaTag);
-            } else if (!metaTag) {
-              console.warn("Código de verificação do AdSense inválido detectado (não é uma tag meta):", code);
             }
+          } else {
+            console.warn("Código de verificação do AdSense inválido detectado (não é uma tag meta válida):", code);
           }
-        });
-
-        // 2. Inject AdSense Main Script for Ad Serving
-        if (adsenseConfig.adsenseId && !document.head.querySelector(`script[src*="pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseConfig.adsenseId}"]`)) {
-          const script = document.createElement('script');
-          script.async = true;
-          script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseConfig.adsenseId}`;
-          script.crossOrigin = 'anonymous';
-          document.head.appendChild(script);
-          cleanupElements.push(script); // Add script to cleanup list
         }
+      });
+    }
 
-      } catch (error) {
-        console.error("Erro ao buscar ou injetar elementos do AdSense:", error);
-      }
-    };
-
-    injectAdsenseElements();
-
-    // Cleanup function: remove all injected elements when component unmounts
+    // Cleanup function: remove all injected elements when component unmounts or adsenseConfig changes
     return () => {
       cleanupElements.forEach(el => {
         if (el.parentNode) {
@@ -90,7 +106,7 @@ const App: React.FC = () => {
         }
       });
     };
-  }, []); // Run once on component mount
+  }, [adsenseConfig]); // Re-run effect when adsenseConfig changes
 
   const handleLogin = async (emailOrUsername: string, pass: string): Promise<boolean> => {
     setLoading(true);
@@ -132,7 +148,7 @@ const App: React.FC = () => {
     setCurrentRoute(route);
   }, []);
 
-  if (loading) {
+  if (loading || !adsenseConfig || !appSettings || !rewardConfig) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-900">
         <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
@@ -156,10 +172,21 @@ const App: React.FC = () => {
         />
       )}
       {currentRoute === AppRoute.APP && currentUser && !currentUser.isAdmin && (
-        <AppLayout currentUser={currentUser} onLogout={handleLogout} />
+        <AppLayout
+          currentUser={currentUser}
+          onLogout={handleLogout}
+          geminiApiKey={appSettings.geminiApiKey} // Pass updated API key
+          rewardConfig={rewardConfig} // Pass updated reward config
+        />
       )}
       {currentRoute === AppRoute.ADMIN && currentUser && currentUser.isAdmin && (
-        <AdminLayout currentUser={currentUser} onLogout={handleLogout} />
+        <AdminLayout
+          currentUser={currentUser}
+          onLogout={handleLogout}
+          onUpdateGlobalAdsenseConfig={updateGlobalAdsenseConfig}
+          onUpdateGlobalAppSettings={updateGlobalAppSettings}
+          onUpdateGlobalRewardConfig={updateGlobalRewardConfig}
+        />
       )}
     </div>
   );

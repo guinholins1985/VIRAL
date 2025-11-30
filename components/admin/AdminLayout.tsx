@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User } from '../../types';
+import { User, AdsenseConfig as AdsenseConfigType, AppSettings, RewardConfig } from '../../types'; // Import necessary types
 import AdminSidebar from './AdminSidebar';
 import AdminDashboard from './AdminDashboard';
 import UserManagement from './UserManagement';
@@ -13,6 +13,9 @@ import { LogoutIcon } from '../icons/HeroIcons';
 interface AdminLayoutProps {
   currentUser: User;
   onLogout: () => void;
+  onUpdateGlobalAdsenseConfig: () => Promise<void>; // Callback to update global Adsense config
+  onUpdateGlobalAppSettings: () => Promise<void>; // Callback to update global App settings
+  onUpdateGlobalRewardConfig: () => Promise<void>; // Callback to update global Reward config
 }
 
 enum AdminPage {
@@ -24,7 +27,13 @@ enum AdminPage {
   SETTINGS = 'settings',
 }
 
-const AdminLayout: React.FC<AdminLayoutProps> = ({ currentUser, onLogout }) => {
+const AdminLayout: React.FC<AdminLayoutProps> = ({
+  currentUser,
+  onLogout,
+  onUpdateGlobalAdsenseConfig,
+  onUpdateGlobalAppSettings,
+  onUpdateGlobalRewardConfig,
+}) => {
   const [currentPage, setCurrentPage] = useState<AdminPage>(AdminPage.DASHBOARD);
 
   return (
@@ -48,9 +57,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ currentUser, onLogout }) => {
           {currentPage === AdminPage.DASHBOARD && <AdminDashboard />}
           {currentPage === AdminPage.USERS && <UserManagement />}
           {currentPage === AdminPage.VIDEOS && <VideoManagement />}
-          {currentPage === AdminPage.REWARDS && <RewardSystemConfig />}
-          {currentPage === AdminPage.ADSENSE && <AdsenseConfig />}
-          {currentPage === AdminPage.SETTINGS && <Settings />}
+          {currentPage === AdminPage.REWARDS && <RewardSystemConfig onUpdateGlobalRewardConfig={onUpdateGlobalRewardConfig} />}
+          {currentPage === AdminPage.ADSENSE && <AdsenseConfig onUpdateGlobalAdsenseConfig={onUpdateGlobalAdsenseConfig} />}
+          {currentPage === AdminPage.SETTINGS && <Settings onUpdateGlobalAppSettings={onUpdateGlobalAppSettings} />}
         </main>
       </div>
     </div>

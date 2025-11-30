@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { WithdrawalRequest } from '../../types';
+import { RewardConfig, WithdrawalRequest } from '../../types';
 import { getRewardConfig, updateRewardConfig, getWithdrawalRequests, updateWithdrawalRequestStatus } from '../../services/apiService';
 import LoadingSpinner from '../shared/LoadingSpinner';
 import Button from '../shared/Button';
 import Input from '../shared/Input';
 import { DollarSignIcon, CheckCircleIcon, XCircleIcon, DocumentTextIcon } from '../icons/HeroIcons';
 
-const RewardSystemConfig: React.FC = () => {
+interface RewardSystemConfigProps {
+  onUpdateGlobalRewardConfig: () => Promise<void>; // Callback to update global reward config
+}
+
+const RewardSystemConfig: React.FC<RewardSystemConfigProps> = ({ onUpdateGlobalRewardConfig }) => {
   const [rewardPerVideo, setRewardPerVideo] = useState<number>(0);
   const [minWatchTimeSeconds, setMinWatchTimeSeconds] = useState<number>(0);
   const [loading, setLoading] = useState(true);
@@ -18,7 +22,7 @@ const RewardSystemConfig: React.FC = () => {
   const fetchConfigAndWithdrawals = async () => {
     setLoading(true);
     try {
-      const config = await getRewardConfig();
+      const config: RewardConfig = await getRewardConfig();
       setRewardPerVideo(config.rewardPerVideo);
       setMinWatchTimeSeconds(config.minWatchTimeSeconds);
       const fetchedWithdrawals = await getWithdrawalRequests();
@@ -42,6 +46,7 @@ const RewardSystemConfig: React.FC = () => {
     try {
       await updateRewardConfig({ rewardPerVideo, minWatchTimeSeconds });
       setConfigSaveSuccess(true);
+      await onUpdateGlobalRewardConfig(); // Notify App.tsx to update global state
       setTimeout(() => setConfigSaveSuccess(false), 3000);
     } catch (err) {
       setError('Falha ao salvar a configuração de recompensas.');

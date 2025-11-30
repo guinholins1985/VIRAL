@@ -183,10 +183,10 @@ export const AD_PLACEMENT_OPTIONS = [
 ];
 
 export const ADSENSE_MOCK_DATA = {
-  adsenseId: 'pub-1234567890123456',
-  verificationCodes: ['<meta name="google-adsense-account" content="ca-pub-XXXXXXXXXXXXXXXX">'], // Changed to array
+  adsenseId: 'ca-pub-8115686562988147', // Updated to match the AdSense client ID
+  verificationCodes: ['<meta name="google-adsense-account" content="ca-pub-8115686562988147">'], // Example using the correct pub-ID
   adBlocks: [
-    { id: 'ad1', name: 'Anúncio do Feed', code: '<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXX" crossorigin="anonymous"></script><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script>', active: true, placement: 'video-feed' },
+    { id: 'ad1', name: 'Anúncio do Feed', code: '<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8115686562988147" crossorigin="anonymous"></script><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-8115686562988147" data-ad-slot="XXXXXXXXXX" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script>', active: true, placement: 'video-feed' },
     { id: 'ad2', name: 'Anúncio do Rodapé', code: '<!-- Bloco de Anúncio do Rodapé -->', active: false, placement: 'footer' },
   ],
   revenueReports: [
