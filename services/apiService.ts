@@ -315,13 +315,47 @@ export const updateAppSettings = async (settings: AppSettings): Promise<void> =>
   localStorage.setItem(localStorageAppSettingsKey, JSON.stringify(settings));
 };
 
-export const syncVimeoAccount = async (accessToken: string): Promise<boolean> => {
+export const syncVimeoAccount = async (accessToken: string, vimeoUserId?: string): Promise<boolean> => {
   await delay(1500); // Simulate API call
-  console.log('Attempting to sync Vimeo account with token:', accessToken);
-  if (accessToken && accessToken.length > 10) { // Basic validation
-    console.log('Vimeo account synced successfully (mock)!');
-    return true;
+  console.log('Attempting to sync Vimeo account with token:', accessToken, 'and user ID:', vimeoUserId);
+
+  if (!accessToken || accessToken.length < 10) { // Basic validation
+    console.error('Vimeo account sync failed (mock): Token de acesso Vimeo inválido.');
+    throw new Error('Token de acesso Vimeo inválido.');
   }
-  console.error('Vimeo account sync failed (mock): Invalid token.');
-  return false;
+  if (!vimeoUserId) {
+    console.error('Vimeo account sync failed (mock): ID de usuário Vimeo não fornecido.');
+    throw new Error('ID de usuário Vimeo não fornecido.');
+  }
+
+  // Simulate API call to Vimeo to fetch videos for this user
+  let videos: Video[] = JSON.parse(localStorage.getItem(localStorageVideosKey) || '[]');
+
+  // Check if a video from this user ID is already mocked to avoid duplicates on repeated syncs
+  const existingVimeoVideoFromUser = videos.find(v => v.source === 'vimeo' && v.url.includes(vimeoUserId!));
+
+  if (!existingVimeoVideoFromUser) {
+    const newVimeoVideo: Video = {
+      id: `v_vimeo_user_${vimeoUserId}_${Date.now()}`,
+      title: `Vimeo Sincronizado: Vídeos do Usuário ${vimeoUserId}`,
+      thumbnail: `https://picsum.photos/320/180?random=${vimeoUserId}`,
+      duration: Math.floor(Math.random() * (600 - 120 + 1)) + 120, // Random duration between 120-600s
+      source: 'vimeo',
+      url: `https://vimeo.com/${vimeoUserId}/videos`, // Mock URL for a user's videos
+      views: Math.floor(Math.random() * 1000) + 100,
+      averageWatchTime: Math.floor(Math.random() * 60) + 30,
+      likes: Math.floor(Math.random() * 50) + 5,
+      isActive: true,
+      uploadDate: new Date().toISOString(),
+      category: 'Sincronizado',
+    };
+    videos.push(newVimeoVideo);
+    localStorage.setItem(localStorageVideosKey, JSON.stringify(videos));
+  } else {
+    console.log(`Vimeo user ${vimeoUserId} already has videos mocked. Simulating update.`);
+    // In a real scenario, you'd update existing videos here
+  }
+
+  console.log(`Vimeo account for user ${vimeoUserId} synced successfully (mock)!`);
+  return true;
 };

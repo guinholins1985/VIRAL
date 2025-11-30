@@ -114,6 +114,18 @@ export const MOCK_VIDEOS = [
     likes: 15,
     isActive: false, // Example of an inactive video
   },
+  {
+    id: 'v_vimeo_250829792', // Adjusted ID to match user's previous request context
+    title: 'Vimeo: Beautiful Nature Scene',
+    thumbnail: 'https://i.vimeocdn.com/video/784158406_1280x720.jpg', // Placeholder thumbnail for the given Vimeo ID
+    duration: 180,
+    source: 'vimeo',
+    url: 'https://vimeo.com/250829792',
+    views: 1500,
+    averageWatchTime: 100,
+    likes: 75,
+    isActive: true,
+  },
 ];
 
 export const MOCK_ADMIN_DASHBOARD_DATA = {
@@ -204,4 +216,5 @@ export const MOCK_APP_SETTINGS = {
   vimeoApiKey: VIMEO_API_KEY,
   geminiApiKey: GEMINI_API_KEY,
   vimeoAccessToken: 'YOUR_VIMEO_ACCESS_TOKEN', // Mock access token
+  vimeoUserId: '250829792', // Added for Vimeo sync
 };

@@ -20,6 +20,7 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings }) => {
     vimeoApiKey: 'YOUR_VIMEO_API_KEY',
     geminiApiKey: 'YOUR_GEMINI_API_KEY',
     vimeoAccessToken: '',
+    vimeoUserId: '', // Initialize new field
   });
 
   const [loading, setLoading] = useState(false);
@@ -78,10 +79,16 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings }) => {
       if (!appSettings.vimeoAccessToken) {
         throw new Error('Por favor, forneça um Token de Acesso Vimeo.');
       }
-      const success = await syncVimeoAccount(appSettings.vimeoAccessToken);
+      if (!appSettings.vimeoUserId) { // Added validation for Vimeo User ID
+        throw new Error('Por favor, forneça um ID de Usuário Vimeo para sincronizar.');
+      }
+      const success = await syncVimeoAccount(appSettings.vimeoAccessToken, appSettings.vimeoUserId); // Pass vimeoUserId
       setVimeoSyncSuccess(success);
-      if (!success) {
-        setVimeoSyncError('A sincronização da conta Vimeo falhou. Por favor, verifique o token.');
+      if (success) {
+        setVimeoSyncError(null);
+        // Optionally, trigger a video re-fetch in AppLayout if needed, for this mock it's handled by localStorage read.
+      } else {
+        setVimeoSyncError('A sincronização da conta Vimeo falhou. Por favor, verifique o token e o ID do usuário.');
       }
       setTimeout(() => setVimeoSyncSuccess(null), 5000);
     } catch (err) {
@@ -193,7 +200,7 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings }) => {
         </h3>
         <p className="text-gray-400 mb-4">
           Conecte sua conta Vimeo para gerenciar vídeos diretamente.
-          Insira seu token de acesso pessoal Vimeo e clique em sincronizar.
+          Insira seu token de acesso pessoal Vimeo e o ID do usuário para sincronizar seus vídeos.
           (Isso é uma simulação para fins de demonstração.)
         </p>
         <Input
@@ -206,10 +213,20 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings }) => {
           className="mb-4"
           placeholder="Seu token de acesso pessoal Vimeo"
         />
+        <Input
+          label="ID de Usuário Vimeo"
+          id="vimeoUserId"
+          name="vimeoUserId"
+          type="text"
+          value={appSettings.vimeoUserId || ''}
+          onChange={handleChange}
+          className="mb-4"
+          placeholder="Ex: 250829792"
+        />
         <Button onClick={handleSyncVimeo} disabled={vimeoSyncLoading} className="py-2.5">
           {vimeoSyncLoading ? <LoadingSpinner size="sm" color="border-white" /> : 'Sincronizar Conta Vimeo'}
         </Button>
-        {vimeoSyncSuccess === true && <p className="text-green-400 text-sm mt-2 flex items-center"><VideoIcon className="h-5 w-5 mr-1"/> Sincronização de conta Vimeo bem-sucedida!</p>}
+        {vimeoSyncSuccess === true && <p className="text-green-400 text-sm mt-2 flex items-center"><VideoIcon className="h-5 w-5 mr-1"/> Sincronização de conta Vimeo bem-sucedida! Novos vídeos adicionados/atualizados.</p>}
         {vimeoSyncSuccess === false && vimeoSyncError && <p className="text-red-500 text-sm mt-2">{vimeoSyncError}</p>}
       </div>
 

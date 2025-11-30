@@ -90,6 +90,7 @@ export interface AppSettings {
   vimeoApiKey: string;
   geminiApiKey: string;
   vimeoAccessToken?: string; // Added for Vimeo sync
+  vimeoUserId?: string; // Added for Vimeo sync
 }
 
 export interface RewardConfig {
