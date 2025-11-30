@@ -101,8 +101,9 @@ export const getAllVideos = async (): Promise<Video[]> => {
 };
 
 // New function for paginated video fetching (used by App for infinite scroll)
-export const getPaginatedVideos = async (offset: number, limit: number): Promise<{ videos: Video[], total: number }> => {
-  await delay(300); // Simulate network delay
+// Added isInitialLoad parameter for optimization
+export const getPaginatedVideos = async (offset: number, limit: number, isInitialLoad: boolean = false): Promise<{ videos: Video[], total: number }> => {
+  await delay(isInitialLoad ? 50 : 300); // Faster delay for initial load, longer for subsequent
   const allVideos: Video[] = JSON.parse(localStorage.getItem(localStorageVideosKey) || '[]');
   const activeVideos = allVideos.filter(video => video.isActive);
   const paginatedVideos = activeVideos.slice(offset, offset + limit);
@@ -326,7 +327,7 @@ export const updateAppSettings = async (settings: AppSettings): Promise<void> =>
  * Helper function para simular a geração de uma lista consistente de vídeos Vimeo
  * para um dado ID de usuário.
  * Esta função simula a "extração de todos os vídeos" de uma conta Vimeo.
- * Gera entre 15 e 20 vídeos mockados únicos.
+ * Gera entre 50 e 60 vídeos mockados únicos.
  * @param userId O ID do usuário Vimeo para o qual gerar vídeos.
  * @returns Uma lista de vídeos mockados.
  */
@@ -341,7 +342,7 @@ const generateMockVimeoVideosForUser = (userId: string): Video[] => {
     return s / 233280;
   };
 
-  const numVideos = rand(15, 20); // Gerar entre 15 e 20 vídeos para simular "todos os vídeos"
+  const numVideos = rand(50, 60); // Gerar entre 50 e 60 vídeos para simular "todos os vídeos"
   const videos: Video[] = [];
   for (let i = 1; i <= numVideos; i++) {
     const videoVimeoId = `${Math.floor(seededRandom() * 900000000) + 100000000}`; // ID aleatório de 9 dígitos estilo Vimeo
@@ -372,7 +373,7 @@ const generateMockVimeoVideosForUser = (userId: string): Video[] => {
  * @returns Uma promessa que resolve para true se a sincronização for bem-sucedida.
  */
 export const syncVimeoAccount = async (vimeoUserId?: string): Promise<boolean> => {
-  await delay(1500); // Simula chamada de API
+  await delay(500); // Reduced delay for faster perceived sync
   console.log('Tentando sincronizar conta Vimeo (automático) com ID de usuário:', vimeoUserId);
 
   if (!vimeoUserId) {
@@ -397,7 +398,7 @@ export const syncVimeoAccount = async (vimeoUserId?: string): Promise<boolean> =
  * @returns Uma promessa que resolve para uma lista de metadados de vídeos Vimeo.
  */
 export const fetchVimeoUserVideos = async (vimeoUserId: string): Promise<VimeoVideoMetadata[]> => {
-  await delay(1000); // Simula chamada de API
+  await delay(300); // Reduced delay for faster perceived fetch
   console.log('Buscando vídeos Vimeo para pré-visualização com ID de usuário:', vimeoUserId);
 
   if (!vimeoUserId) {

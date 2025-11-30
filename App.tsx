@@ -74,7 +74,8 @@ const App: React.FC = () => {
     setCurrentPage(0); // Reset page to 0 for initial load
     setHasMoreVideos(true); // Assume there might be more videos initially
     try {
-      const { videos: fetchedVideos, total } = await getPaginatedVideos(0, VIDEOS_PER_PAGE);
+      // Pass isInitialLoad: true for faster initial fetching
+      const { videos: fetchedVideos, total } = await getPaginatedVideos(0, VIDEOS_PER_PAGE, true); 
       setVideos(fetchedVideos);
       setHasMoreVideos(fetchedVideos.length < total); // Check if all videos loaded in first page
     } catch (error) {
@@ -93,7 +94,8 @@ const App: React.FC = () => {
     setLoadingMoreVideos(true);
     try {
       const nextPage = currentPage + 1;
-      const { videos: fetchedVideos, total } = await getPaginatedVideos(nextPage * VIDEOS_PER_PAGE, VIDEOS_PER_PAGE);
+      // Subsequent loads are not initial, so isInitialLoad is false (or omitted)
+      const { videos: fetchedVideos, total } = await getPaginatedVideos(nextPage * VIDEOS_PER_PAGE, VIDEOS_PER_PAGE); 
       setVideos(prevVideos => [...prevVideos, ...fetchedVideos]);
       setCurrentPage(nextPage);
       setHasMoreVideos((currentPage + 1) * VIDEOS_PER_PAGE < total); // Check if there are more pages
