@@ -73,7 +73,7 @@ export const MOCK_VIDEOS = [
   {
     id: 'v_funny_cat_compilation_1',
     title: 'Gatos Engraçados: Compilação Viral #1',
-    thumbnail: 'https://i.vimeocdn.com/video/811568656_295x166.jpg',
+    thumbnail: 'https://i.vimeocdn.com/video/811568656_220x166.jpg',
     duration: 180,
     source: 'vimeo',
     url: 'https://vimeo.com/811568656',
@@ -82,7 +82,7 @@ export const MOCK_VIDEOS = [
   {
     id: 'v_epic_fail_moment_2',
     title: 'Momentos Épicos de Falha (Viral)',
-    thumbnail: 'https://i.vimeocdn.com/video/811568657_295x166.jpg',
+    thumbnail: 'https://i.vimeocdn.com/video/811568657_220x166.jpg',
     duration: 220,
     source: 'vimeo',
     url: 'https://vimeo.com/811568657',
@@ -91,7 +91,7 @@ export const MOCK_VIDEOS = [
   {
     id: 'v_baby_laugh_challenge_3',
     title: 'Desafio do Bebê Rindo: Impossível Não Rir',
-    thumbnail: 'https://i.vimeocdn.com/video/811568658_295x166.jpg',
+    thumbnail: 'https://i.vimeocdn.com/video/811568658_220x166.jpg',
     duration: 150,
     source: 'vimeo',
     url: 'https://vimeo.com/811568658',
@@ -100,7 +100,7 @@ export const MOCK_VIDEOS = [
   {
     id: 'v_dog_talent_show_4',
     title: 'Show de Talentos Canino (Incrível e Engraçado)',
-    thumbnail: 'https://i.vimeocdn.com/video/811568659_295x166.jpg',
+    thumbnail: 'https://i.vimeocdn.com/video/811568659_220x166.jpg',
     duration: 280,
     source: 'vimeo',
     url: 'https://vimeo.com/811568659',
@@ -109,7 +109,7 @@ export const MOCK_VIDEOS = [
   {
     id: 'v_prank_gone_wrong_5',
     title: 'Pegadinhas que Deram Errado (Risada Garantida)',
-    thumbnail: 'https://i.vimeocdn.com/video/811568660_295x166.jpg',
+    thumbnail: 'https://i.vimeocdn.com/video/811568660_220x166.jpg',
     duration: 300,
     source: 'vimeo',
     url: 'https://vimeo.com/811568660',
@@ -118,7 +118,7 @@ export const MOCK_VIDEOS = [
   {
     id: 'v_funny_commercials_6',
     title: 'Comerciais Mais Engraçados do Mundo',
-    thumbnail: 'https://i.vimeocdn.com/video/811568661_295x166.jpg',
+    thumbnail: 'https://i.vimeocdn.com/video/811568661_220x166.jpg',
     duration: 210,
     source: 'vimeo',
     url: 'https://vimeo.com/811568661',
@@ -127,7 +127,7 @@ export const MOCK_VIDEOS = [
   {
     id: 'v_kids_say_funny_things_7',
     title: 'Crianças Dizendo Coisas Hilárias (Viral)',
-    thumbnail: 'https://i.vimeocdn.com/video/811568662_295x166.jpg',
+    thumbnail: 'https://i.vimeocdn.com/video/811568662_220x166.jpg',
     duration: 190,
     source: 'vimeo',
     url: 'https://vimeo.com/811568662',
@@ -136,7 +136,7 @@ export const MOCK_VIDEOS = [
   {
     id: 'v_try_not_to_laugh_8',
     title: 'Tente Não Rir: Desafio Impossível!',
-    thumbnail: 'https://i.vimeocdn.com/video/811568663_295x166.jpg',
+    thumbnail: 'https://i.vimeocdn.com/video/811568663_220x166.jpg',
     duration: 320,
     source: 'vimeo',
     url: 'https://vimeo.com/811568663',
@@ -145,7 +145,7 @@ export const MOCK_VIDEOS = [
   {
     id: 'v_animal_shenanigans_9',
     title: 'Travessuras de Animais Fofos e Engraçados',
-    thumbnail: 'https://i.vimeocdn.com/video/811568664_295x166.jpg',
+    thumbnail: 'https://i.vimeocdn.com/video/811568664_220x166.jpg',
     duration: 250,
     source: 'vimeo',
     url: 'https://vimeo.com/811568664',
@@ -154,7 +154,7 @@ export const MOCK_VIDEOS = [
   {
     id: 'v_epic_sports_fails_10',
     title: 'Falhas Épicas no Esporte: Viralizou!',
-    thumbnail: 'https://i.vimeocdn.com/video/811568665_295x166.jpg',
+    thumbnail: 'https://i.vimeocdn.com/video/811568665_220x166.jpg',
     duration: 200,
     source: 'vimeo',
     url: 'https://vimeo.com/811568665',
@@ -163,7 +163,7 @@ export const MOCK_VIDEOS = [
   {
     id: 'v_cooking_disasters_11',
     title: 'Desastres na Cozinha Mais Engraçados',
-    thumbnail: 'https://i.vimeocdn.com/video/811568666_295x166.jpg',
+    thumbnail: 'https://i.vimeocdn.com/video/811568666_220x166.jpg',
     duration: 160,
     source: 'vimeo',
     url: 'https://vimeo.com/811568666',
@@ -172,7 +172,7 @@ export const MOCK_VIDEOS = [
   {
     id: 'v_ultimate_memes_comp_12',
     title: 'Melhores Memes de Todos os Tempos (Compilação)',
-    thumbnail: 'https://i.vimeocdn.com/video/811568667_295x166.jpg',
+    thumbnail: 'https://i.vimeocdn.com/video/811568667_220x166.jpg',
     duration: 290,
     source: 'vimeo',
     url: 'https://vimeo.com/811568667',
@@ -181,7 +181,7 @@ export const MOCK_VIDEOS = [
   {
     id: 'v_hilarious_teachers_13',
     title: 'Professores Engraçados em Ação',
-    thumbnail: 'https://i.vimeocdn.com/video/811568668_295x166.jpg',
+    thumbnail: 'https://i.vimeocdn.com/video/811568668_220x166.jpg',
     duration: 170,
     source: 'vimeo',
     url: 'https://vimeo.com/811568668',
@@ -190,7 +190,7 @@ export const MOCK_VIDEOS = [
   {
     id: 'v_street_interview_jokes_14',
     title: 'Entrevistas de Rua Mais Engraçadas',
-    thumbnail: 'https://i.vimeocdn.com/video/811568669_295x166.jpg',
+    thumbnail: 'https://i.vimeocdn.com/video/811568669_220x166.jpg',
     duration: 230,
     source: 'vimeo',
     url: 'https://vimeo.com/811568669',
@@ -199,7 +199,7 @@ export const MOCK_VIDEOS = [
   {
     id: 'v_extreme_challenges_15',
     title: 'Desafios Extremos (Você Acredita?)',
-    thumbnail: 'https://i.vimeocdn.com/video/811568670_295x166.jpg',
+    thumbnail: 'https://i.vimeocdn.com/video/811568670_220x166.jpg',
     duration: 350,
     source: 'vimeo',
     url: 'https://vimeo.com/811568670',
@@ -208,7 +208,7 @@ export const MOCK_VIDEOS = [
   {
     id: 'v_pet_vs_owner_16',
     title: 'Animais de Estimação vs. Donos (Batalha Engraçada)',
-    thumbnail: 'https://i.vimeocdn.com/video/811568671_295x166.jpg',
+    thumbnail: 'https://i.vimeocdn.com/video/811568671_220x166.jpg',
     duration: 260,
     source: 'vimeo',
     url: 'https://vimeo.com/811568671',
@@ -217,7 +217,7 @@ export const MOCK_VIDEOS = [
   {
     id: 'v_dance_battle_fails_17',
     title: 'Batalhas de Dança que Falharam Miseravelmente',
-    thumbnail: 'https://i.vimeocdn.com/video/811568672_295x166.jpg',
+    thumbnail: 'https://i.vimeocdn.com/video/811568672_220x166.jpg',
     duration: 190,
     source: 'vimeo',
     url: 'https://vimeo.com/811568672',
@@ -226,7 +226,7 @@ export const MOCK_VIDEOS = [
   {
     id: 'v_reaction_videos_18',
     title: 'Reações Hilárias a Vídeos Virais',
-    thumbnail: 'https://i.vimeocdn.com/video/811568673_295x166.jpg',
+    thumbnail: 'https://i.vimeocdn.com/video/811568673_220x166.jpg',
     duration: 240,
     source: 'vimeo',
     url: 'https://vimeo.com/811568673',
@@ -235,7 +235,7 @@ export const MOCK_VIDEOS = [
   {
     id: 'v_magic_trick_fails_19',
     title: 'Truques de Mágica que Deram Errado',
-    thumbnail: 'https://i.vimeocdn.com/video/811568674_295x166.jpg',
+    thumbnail: 'https://i.vimeocdn.com/video/811568674_220x166.jpg',
     duration: 170,
     source: 'vimeo',
     url: 'https://vimeo.com/811568674',
@@ -244,13 +244,14 @@ export const MOCK_VIDEOS = [
   {
     id: 'v_ultimate_compilation_20',
     title: 'A Compilação Mais Engraçada da Internet!',
-    thumbnail: 'https://i.vimeocdn.com/video/811568675_295x166.jpg',
+    thumbnail: 'https://i.vimeocdn.com/video/811568675_220x166.jpg',
     duration: 380,
     source: 'vimeo',
     url: 'https://vimeo.com/811568675',
     views: 200000, averageWatchTime: 300, likes: 15000, isActive: true, category: 'humor',
   },
   // START - New Vimeo videos added as per request (77 unique videos from the provided list)
+  // Thumbnail format changed to be consistent with Vimeo CDN
   { id: 'v_1139312677', title: 'Vimeo Adicionado: 1139312677', thumbnail: 'https://i.vimeocdn.com/video/1139312677_295x166.jpg', duration: 250, source: 'vimeo', url: 'https://vimeo.com/1139312677', views: 8500, averageWatchTime: 200, likes: 150, isActive: true, category: 'vlog' },
   { id: 'v_1139310657', title: 'Vimeo Adicionado: 1139310657', thumbnail: 'https://i.vimeocdn.com/video/1139310657_295x166.jpg', duration: 180, source: 'vimeo', url: 'https://vimeo.com/1139310657', views: 9200, averageWatchTime: 160, likes: 180, isActive: true, category: 'viagem' },
   { id: 'v_1139310608', title: 'Vimeo Adicionado: 1139310608', thumbnail: 'https://i.vimeocdn.com/video/1139310608_295x166.jpg', duration: 320, source: 'vimeo', url: 'https://vimeo.com/1139310608', views: 11000, averageWatchTime: 280, likes: 220, isActive: true, category: 'arte' },
@@ -402,7 +403,7 @@ export const AD_PLACEMENT_OPTIONS = [
 
 export const ADSENSE_MOCK_DATA = {
   adsenseId: 'ca-pub-8115686562988147', // Updated to match the AdSense client ID
-  verificationCodes: ['<meta name="google-adsense-account" content="ca-pub-8115686562988147">'], // Example using the correct pub-ID
+  verificationCodes: ['<meta name="google-site-verification" content="ca-pub-8115686562988147">'], // Corrected meta tag name
   adBlocks: [ // Adicionado um bloco de anúncio padrão para demonstração
     {
       id: 'ad_video_feed_default',

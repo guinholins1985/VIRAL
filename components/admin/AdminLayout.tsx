@@ -16,7 +16,7 @@ interface AdminLayoutProps {
   onUpdateGlobalAdsenseConfig: () => Promise<void>;
   onUpdateGlobalAppSettings: () => Promise<void>;
   onUpdateGlobalRewardConfig: () => Promise<void>;
-  loadInitialVideos: () => Promise<void>; // Callback to trigger global video list refresh (for user feed) (renamed from refreshVideos)
+  loadInitialVideos: () => Promise<void>; // Callback to trigger global video list refresh (for user feed)
   refreshCurrentUser: () => Promise<void>; // New prop: callback to refresh global currentUser state
 }
 
@@ -35,8 +35,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
   onUpdateGlobalAdsenseConfig,
   onUpdateGlobalAppSettings,
   onUpdateGlobalRewardConfig,
-  loadInitialVideos, // Renamed from refreshVideos
-  refreshCurrentUser, // Destructure new prop
+  loadInitialVideos, 
+  refreshCurrentUser, 
 }) => {
   const [currentPage, setCurrentPage] = useState<AdminPage>(AdminPage.DASHBOARD);
   // State to force refresh of admin video list when changes happen elsewhere in admin
@@ -74,7 +74,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
           )}
           {currentPage === AdminPage.VIDEOS && (
             <VideoManagement
-              loadInitialVideos={loadInitialVideos} // Pass the refresh callback (renamed from refreshVideos)
+              loadInitialVideos={loadInitialVideos} // Pass the refresh callback
               adminVideosRefreshKey={adminVideosRefreshKey} // Pass the refresh key
               onAdminVideosRefreshTriggered={onAdminVideosRefreshTriggered} // Pass the trigger
             />
@@ -89,7 +89,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
           {currentPage === AdminPage.SETTINGS && (
             <Settings
               onUpdateGlobalAppSettings={onUpdateGlobalAppSettings}
-              loadInitialVideos={loadInitialVideos} // Pass the refresh callback (renamed from refreshVideos)
+              loadInitialVideos={loadInitialVideos} // Pass the refresh callback
               onAdminVideosRefreshTriggered={onAdminVideosRefreshTriggered} // Pass the trigger
             />
           )}

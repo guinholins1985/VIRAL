@@ -1,3 +1,11 @@
+export enum AppRoute {
+  LANDING = 'landing',
+  LOGIN = 'login',
+  REGISTER = 'register',
+  APP = 'app',
+  ADMIN = 'admin',
+}
+
 export interface User {
   id: string;
   name: string;

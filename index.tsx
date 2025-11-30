@@ -3,22 +3,13 @@ import LandingPage from './components/landing/LandingPage';
 import AuthPage from './components/auth/AuthPage';
 import AppLayout from './components/app/AppLayout';
 import AdminLayout from './components/admin/AdminLayout';
-import { User, AdsenseConfig, AppSettings, RewardConfig, Video } from './types';
+import { User, AdsenseConfig, AppSettings, RewardConfig, Video, AppRoute } from './types'; // Import AppRoute from types
 import { getCurrentUser, login as apiLogin, register as apiRegister, getAdsenseConfig, getAppSettings, getRewardConfig, getPaginatedVideos } from './services/apiService'; // Import getPaginatedVideos
 import { VIDEOS_PER_PAGE } from './constants'; // Import VIDEOS_PER_PAGE
 
-// Define the available routes/pages
-enum AppRoute {
-  LANDING = 'landing',
-  LOGIN = 'login',
-  REGISTER = 'register',
-  APP = 'app',
-  ADMIN = 'admin',
-}
-
 const App: React.FC = () => {
   const [currentRoute, setCurrentRoute] = useState<AppRoute>(AppRoute.LANDING);
-  const [currentUser, setCurrentUser] = useState<User | null>(null); // Global currentUser state
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loadingAppConfig, setLoadingAppConfig] = useState(true); // Renamed for clarity: initial app config loading
 
   // Global states for admin configurations
@@ -28,7 +19,6 @@ const App: React.FC = () => {
 
   // Global states for video list and pagination (elevated from AppLayout)
   const [videos, setVideos] = useState<Video[]>([]);
-  // FIX: Correctly initialize `loadingVideos` with `useState`
   const [loadingVideos, setLoadingVideos] = useState(true); // Initial load for the first page
   const [currentPage, setCurrentPage] = useState(0);
   const [hasMoreVideos, setHasMoreVideos] = useState(true);
@@ -240,7 +230,7 @@ const App: React.FC = () => {
           loadMoreVideos={loadMoreVideos} // Pass the load more callback
           hasMoreVideos={hasMoreVideos} // Pass if there are more videos to load
           loadingMoreVideos={loadingMoreVideos} // Pass loading state for more videos
-          loadInitialVideos={loadInitialVideos} // Pass the refresh callback for videos (renamed from refreshVideos)
+          loadInitialVideos={loadInitialVideos} // Pass the refresh callback for videos
           onUpdateCurrentUser={refreshCurrentUser} // Pass the refresh callback for currentUser
         />
       )}
@@ -251,7 +241,7 @@ const App: React.FC = () => {
           onUpdateGlobalAdsenseConfig={updateGlobalAdsenseConfig}
           onUpdateGlobalAppSettings={updateGlobalAppSettings}
           onUpdateGlobalRewardConfig={updateGlobalRewardConfig}
-          loadInitialVideos={loadInitialVideos} // Pass the refresh callback for videos (renamed from refreshVideos)
+          loadInitialVideos={loadInitialVideos} // Pass the refresh callback for videos
           refreshCurrentUser={refreshCurrentUser} // Pass the refresh callback for currentUser
         />
       )}

@@ -23,7 +23,7 @@ interface AppLayoutProps {
   onUpdateCurrentUser: () => Promise<void>; // New prop: callback to refresh global currentUser state
 }
 
-const AppLayout: React.FC<AppLayoutProps> = ({ currentUser, onLogout, geminiApiKey, rewardConfig, adsenseConfig, videos, loadingVideos, loadMoreVideos, hasMoreVideos, loadingMoreVideos, loadInitialVideos, onUpdateCurrentUser }) => {
+const AppLayout: React.FC<AppLayoutProps> = ({ currentUser, onLogout, geminiApiKey, rewardConfig, adsenseConfig, videos, loadingVideos, loadMoreVideos, hasMoreVideos, loadingMoreVideos: propLoadingMoreVideos, loadInitialVideos, onUpdateCurrentUser }) => {
   // currentUser is now received as a prop from App.tsx, no longer managed locally here.
   // const [currentUser, setCurrentUser] = useState<User>(initialUser); 
   const [currentPage, setCurrentPage] = useState<'feed' | 'profile' | 'rewards'>('feed');
@@ -35,12 +35,17 @@ const AppLayout: React.FC<AppLayoutProps> = ({ currentUser, onLogout, geminiApiK
     if (updatedUser) {
       // Notify App.tsx to update its global currentUser state
       await onUpdateCurrentUser(); 
-      setRewardMessage(`Você ganhou R$${(updatedUser.balance - currentUser.balance).toFixed(2)}!`);
+      // Calculate gained amount to display
+      const previousBalance = currentUser.balance;
+      const newBalance = updatedUser.balance;
+      const gained = newBalance - previousBalance;
+
+      setRewardMessage(`Você ganhou R$${gained.toFixed(2)}!`);
       // Also refresh the global video list to update view counts (optional, but good for consistency)
-      await loadInitialVideos(); // Changed from refreshVideos to loadInitialVideos
+      await loadInitialVideos(); 
       setTimeout(() => setRewardMessage(null), 3000);
     }
-  }, [currentUser, onUpdateCurrentUser, loadInitialVideos]); // onUpdateCurrentUser, loadInitialVideos added as dependency
+  }, [currentUser, onUpdateCurrentUser, loadInitialVideos]);
 
   const handleUpdatePreferences = useCallback(async (preferences: string[]) => {
     const updatedUser = await updateUserPreferences(currentUser.id, preferences);
@@ -49,7 +54,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ currentUser, onLogout, geminiApiK
       await onUpdateCurrentUser(); 
       alert('Preferências atualizadas com sucesso!');
     }
-  }, [currentUser, onUpdateCurrentUser]); // onUpdateCurrentUser added as dependency
+  }, [currentUser, onUpdateCurrentUser]);
 
   const handleNavigateToFeed = () => {
     setCurrentPlayingVideo(null); // Stop playing video when navigating away
@@ -105,8 +110,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ currentUser, onLogout, geminiApiK
                 adsenseConfig={adsenseConfig}
                 loadMoreVideos={loadMoreVideos} // Pass load more callback
                 hasMoreVideos={hasMoreVideos} // Pass has more videos state
-                loadingMoreVideos={loadingMoreVideos} // Pass loading more state
-                loadInitialVideos={loadInitialVideos} // Pass the refresh callback (renamed from refreshVideos)
+                loadingMoreVideos={propLoadingMoreVideos} // Pass loading more state correctly
+                loadInitialVideos={loadInitialVideos} // Pass the refresh callback
               />
             )}
             {currentPage === 'profile' && (
