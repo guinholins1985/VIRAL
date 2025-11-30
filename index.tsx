@@ -197,7 +197,7 @@ const App: React.FC = () => {
     setCurrentRoute(route);
   }, []);
 
-  if (loadingAppConfig || loadingVideos || !adsenseConfig || !appSettings || !rewardConfig) {
+  if (loadingAppConfig || !adsenseConfig || !appSettings || !rewardConfig) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-900">
         <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
@@ -224,6 +224,7 @@ const App: React.FC = () => {
         <AppLayout
           currentUser={currentUser}
           onLogout={handleLogout}
+          geminiApiKey={appSettings.geminiApiKey} // Pass updated API key
           rewardConfig={rewardConfig} // Pass updated reward config
           adsenseConfig={adsenseConfig} // Pass updated adsense config
           videos={videos} // Pass videos from App.tsx

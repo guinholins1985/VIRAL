@@ -1,6 +1,6 @@
 // Replace with your actual Gemini API Key from environment variables
 // For local development, you might set it in your .env file
-// export const GEMINI_API_KEY: string = process.env.API_KEY || 'YOUR_GEMINI_API_KEY'; // Removed as AI recommendation is removed
+export const GEMINI_API_KEY: string = process.env.API_KEY || 'YOUR_GEMINI_API_KEY';
 
 export const REWARD_PER_VIDEO: number = 0.10; // Value in virtual currency
 export const MIN_WATCH_TIME_SECONDS: number = 30; // Minimum time in seconds to watch a video for rewards
@@ -16,7 +16,7 @@ export const MOCK_USERS = [
     balance: 15.50,
     isActive: true,
     isAdmin: false,
-    // preferences: ['comedy', 'tutorials'], // Removed as AI recommendation is removed
+    preferences: ['comedy', 'tutorials'],
     password: 'password123'
   },
   {
@@ -26,7 +26,7 @@ export const MOCK_USERS = [
     balance: 7.25,
     isActive: true,
     isAdmin: false,
-    // preferences: ['gaming', 'music'], // Removed as AI recommendation is removed
+    preferences: ['gaming', 'music'],
     password: 'password123'
   },
   {
@@ -36,7 +36,7 @@ export const MOCK_USERS = [
     balance: 0.00,
     isActive: true,
     isAdmin: true,
-    // preferences: [], // Removed as AI recommendation is removed
+    preferences: [],
     password: 'a12' // Updated admin password
   },
 ];
@@ -417,6 +417,6 @@ export const MOCK_APP_SETTINGS = {
   privacyPolicyUrl: '#',
   termsOfServiceUrl: '#',
   vimeoApiKey: VIMEO_API_KEY,
-  // geminiApiKey: GEMINI_API_KEY, // Removed as AI recommendation is removed
+  geminiApiKey: GEMINI_API_KEY, // Re-enabled
   vimeoUserId: '250829792', // Added for Vimeo sync
 };
