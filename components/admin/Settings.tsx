@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import Button from '../shared/Button';
 import Input from '../shared/Input';
 import LoadingSpinner from '../shared/LoadingSpinner';
-import { CogIcon, AdjustmentsIcon, LinkIcon, VideoIcon, PlusCircleIcon } from '../icons/HeroIcons';
+import { CogIcon, AdjustmentsIcon, LinkIcon, VideoIcon, PlusCircleIcon, CheckCircleIcon, XCircleIcon } from '../icons/HeroIcons';
 import { getAppSettings, updateAppSettings, syncVimeoAccount, fetchVimeoUserVideos, addSingleVimeoVideo } from '../../services/apiService';
 import { AppSettings, VimeoVideoMetadata } from '../../types';
 
 interface SettingsProps {
   onUpdateGlobalAppSettings: () => Promise<void>;
-  refreshVideos: () => Promise<void>; // Updated prop name
+  refreshVideos: () => Promise<void>; // Updated prop name to reflect global refresh
 }
 
 const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings, refreshVideos }) => {
@@ -17,7 +17,6 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings, refreshV
     appLogoUrl: 'https://picsum.photos/50/50?random=logo',
     privacyPolicyUrl: '#',
     termsOfServiceUrl: '#',
-    // youtubeApiKey: 'YOUR_YOUTUBE_API_KEY', // Removed
     vimeoApiKey: 'YOUR_VIMEO_API_KEY',
     geminiApiKey: 'YOUR_GEMINI_API_KEY',
     vimeoUserId: '',
@@ -89,7 +88,7 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings, refreshV
     setAvailableVimeoVideos([]);
     setIsFetchingVimeoVideos(true);
     setFetchVimeoError(null);
-    setVimeoSyncSuccess(null);
+    setVimeoSyncSuccess(null); // Reset success message on new fetch
 
     if (!validateVimeoCredentials()) {
       setIsFetchingVimeoVideos(false);
@@ -99,7 +98,7 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings, refreshV
     try {
       const videos = await fetchVimeoUserVideos(appSettings.vimeoUserId!);
       setAvailableVimeoVideos(videos);
-      setVimeoSyncSuccess(true);
+      setVimeoSyncSuccess(true); // Indicate success of fetch, not necessarily sync
     } catch (err) {
       setFetchVimeoError((err as Error).message || 'Falha ao buscar vídeos da conta Vimeo.');
       setVimeoSyncSuccess(false);
@@ -122,10 +121,10 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings, refreshV
     try {
       await syncVimeoAccount(appSettings.vimeoUserId!);
       setVimeoSyncSuccess(true);
-      setVimeoSyncError(null);
+      setVimeoSyncError('Sincronização de conta Vimeo bem-sucedida! Vídeos da conta foram adicionados/atualizados.');
       await refreshVideos(); // Trigger global video list refresh
       setAvailableVimeoVideos([]); // Clear fetched videos after automatic sync
-      setTimeout(() => setVimeoSyncSuccess(null), 5000);
+      setTimeout(() => {setVimeoSyncSuccess(null); setVimeoSyncError(null);}, 5000);
     } catch (err) {
       setVimeoSyncSuccess(false);
       setVimeoSyncError((err as Error).message || 'Falha ao sincronizar a conta Vimeo.');
@@ -138,13 +137,14 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings, refreshV
   const handleAddManualVimeoVideo = async (video: VimeoVideoMetadata) => {
     setManualAddLoadingId(video.id);
     setVimeoSyncError(null);
-    setVimeoSyncSuccess(null);
+    setVimeoSyncSuccess(null); // Reset success message on new manual add
 
     try {
       await addSingleVimeoVideo(video);
       await refreshVideos(); // Trigger global video list refresh
       setVimeoSyncSuccess(true);
-      setVimeoSyncError('Vídeo Vimeo adicionado com sucesso!');
+      setVimeoSyncError('Vídeo Vimeo adicionado com sucesso!'); // Use success message here
+      // No need to clear availableVimeoVideos, just show success for this video
       setTimeout(() => {setVimeoSyncSuccess(null); setVimeoSyncError(null);}, 3000);
     } catch (err) {
       setVimeoSyncSuccess(false);
@@ -219,7 +219,6 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings, refreshV
           Estas chaves são cruciais para a funcionalidade do aplicativo. Manuseie com cuidado.
           <br/>(Para esta demo, as chaves são mockadas e apenas simuladas no frontend.)
         </p>
-        {/* Removed YouTube API Key input */}
         <Input
           label="Chave da API Vimeo"
           id="vimeoApiKey"
@@ -276,12 +275,12 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings, refreshV
           </Button>
         </div>
 
-        {vimeoSyncSuccess === true && (
-          <p className="text-green-400 text-sm mt-2 flex items-center">
-            <VideoIcon className="h-5 w-5 mr-1"/> {vimeoSyncError || 'Sincronização de conta Vimeo bem-sucedida!'}
+        {(vimeoSyncSuccess !== null || vimeoSyncError) && ( // Show general sync status
+          <p className={`text-sm mt-2 flex items-center ${vimeoSyncSuccess ? 'text-green-400' : 'text-red-500'}`}>
+            {vimeoSyncSuccess ? <CheckCircleIcon className="h-5 w-5 mr-1"/> : <XCircleIcon className="h-5 w-5 mr-1"/>}
+            {vimeoSyncError || (vimeoSyncSuccess ? 'Operação concluída com sucesso!' : 'Falha na operação.')}
           </p>
         )}
-        {vimeoSyncSuccess === false && vimeoSyncError && <p className="text-red-500 text-sm mt-2">{vimeoSyncError}</p>}
 
 
         {/* Display Available Vimeo Videos */}

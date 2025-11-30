@@ -58,7 +58,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
         <main className="flex-1 p-6 lg:p-10 overflow-auto">
           {currentPage === AdminPage.DASHBOARD && <AdminDashboard />}
           {currentPage === AdminPage.USERS && <UserManagement />}
-          {currentPage === AdminPage.VIDEOS && <VideoManagement />}
+          {currentPage === AdminPage.VIDEOS && <VideoManagement refreshVideos={refreshVideos} />}
           {currentPage === AdminPage.REWARDS && <RewardSystemConfig onUpdateGlobalRewardConfig={onUpdateGlobalRewardConfig} />}
           {currentPage === AdminPage.ADSENSE && <AdsenseConfig onUpdateGlobalAdsenseConfig={onUpdateGlobalAdsenseConfig} />}
           {currentPage === AdminPage.SETTINGS && (

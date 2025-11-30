@@ -1,5 +1,5 @@
 import { User, Video, RewardTransaction, WithdrawalRequest, AdminDashboardData, AdsenseConfig, AppSettings, RewardConfig, VimeoVideoMetadata } from '../types';
-import { MOCK_USERS, MOCK_VIDEOS, MOCK_ADMIN_DASHBOARD_DATA, MOCK_WITHDRAWAL_REQUESTS, ADSENSE_MOCK_DATA, MOCK_APP_SETTINGS, REWARD_PER_VIDEO, MIN_WATCH_TIME_SECONDS } from '../constants';
+import { MOCK_USERS, MOCK_VIDEOS, MOCK_ADMIN_DASHBOARD_DATA, MOCK_WITHDRAWAL_REQUESTS, ADSENSE_MOCK_DATA, MOCK_APP_SETTINGS, REWARD_PER_VIDEO, MIN_WATCH_TIME_SECONDS, VIDEOS_PER_PAGE } from '../constants';
 
 const localStorageKey = 'currentUser';
 const localStorageUsersKey = 'allUsers';
@@ -93,11 +93,22 @@ export const logout = async (): Promise<void> => {
   localStorage.removeItem(localStorageKey);
 };
 
-export const getVideos = async (): Promise<Video[]> => {
+// Renamed from getVideos to getAllVideos for clarity (used by admin for full list)
+export const getAllVideos = async (): Promise<Video[]> => {
   await delay(300);
   const videos: Video[] = JSON.parse(localStorage.getItem(localStorageVideosKey) || '[]');
-  return videos.filter(video => video.isActive);
+  return videos;
 };
+
+// New function for paginated video fetching (used by App for infinite scroll)
+export const getPaginatedVideos = async (offset: number, limit: number): Promise<{ videos: Video[], total: number }> => {
+  await delay(300); // Simulate network delay
+  const allVideos: Video[] = JSON.parse(localStorage.getItem(localStorageVideosKey) || '[]');
+  const activeVideos = allVideos.filter(video => video.isActive);
+  const paginatedVideos = activeVideos.slice(offset, offset + limit);
+  return { videos: paginatedVideos, total: activeVideos.length };
+};
+
 
 export const getVideoById = async (id: string): Promise<Video | null> => {
   await delay(100);
@@ -192,16 +203,9 @@ export const deleteUser = async (userId: string): Promise<boolean> => {
   return users.length < initialLength;
 };
 
-export const getAllVideos = async (): Promise<Video[]> => {
-  await delay(300);
-  return JSON.parse(localStorage.getItem(localStorageVideosKey) || '[]');
-};
-
 // Updated addVideo to enforce source type
 export const addVideo = async (video: Omit<Video, 'id' | 'views' | 'averageWatchTime' | 'likes'> & { source: 'vimeo' | 'internal' }): Promise<Video> => {
   await delay(300);
-  // The type definition for `video.source` already restricts it to 'vimeo' | 'internal'.
-  // This check is therefore redundant and will never be true based on the type.
   const videos: Video[] = JSON.parse(localStorage.getItem(localStorageVideosKey) || '[]');
   const newVideo: Video = {
     id: `v_${Date.now()}`,

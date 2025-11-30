@@ -4,7 +4,8 @@ import AuthPage from './components/auth/AuthPage';
 import AppLayout from './components/app/AppLayout';
 import AdminLayout from './components/admin/AdminLayout';
 import { User, AdsenseConfig, AppSettings, RewardConfig, Video } from './types';
-import { getCurrentUser, login as apiLogin, register as apiRegister, getAdsenseConfig, getAppSettings, getRewardConfig, getVideos } from './services/apiService'; // Import getVideos
+import { getCurrentUser, login as apiLogin, register as apiRegister, getAdsenseConfig, getAppSettings, getRewardConfig, getPaginatedVideos } from './services/apiService'; // Import getPaginatedVideos
+import { VIDEOS_PER_PAGE } from './constants'; // Import VIDEOS_PER_PAGE
 
 // Define the available routes/pages
 enum AppRoute {
@@ -25,9 +26,12 @@ const App: React.FC = () => {
   const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
   const [rewardConfig, setRewardConfig] = useState<RewardConfig | null>(null);
 
-  // Global states for video list (elevated from AppLayout)
+  // Global states for video list and pagination (elevated from AppLayout)
   const [videos, setVideos] = useState<Video[]>([]);
-  const [loadingVideos, setLoadingVideos] = useState(true);
+  const [loadingVideos, setLoadingVideos] = useState(true); // Initial load for the first page
+  const [currentPage, setCurrentPage] = useState(0);
+  const [hasMoreVideos, setHasMoreVideos] = useState(true);
+  const [loadingMoreVideos, setLoadingMoreVideos] = useState(false); // For infinite scroll loading
 
 
   const checkAuth = useCallback(async () => {
@@ -64,19 +68,42 @@ const App: React.FC = () => {
     setRewardConfig(config);
   }, []);
 
-  // Centralized function to refresh the video list
-  const refreshVideos = useCallback(async () => {
+  // Centralized function to load the initial page of videos and reset pagination
+  const loadInitialVideos = useCallback(async () => {
     setLoadingVideos(true);
+    setCurrentPage(0); // Reset page to 0 for initial load
+    setHasMoreVideos(true); // Assume there might be more videos initially
     try {
-      const fetchedVideos = await getVideos();
+      const { videos: fetchedVideos, total } = await getPaginatedVideos(0, VIDEOS_PER_PAGE);
       setVideos(fetchedVideos);
+      setHasMoreVideos(fetchedVideos.length < total); // Check if all videos loaded in first page
     } catch (error) {
-      console.error("Falha ao buscar vídeos:", error);
+      console.error("Falha ao buscar vídeos iniciais:", error);
       setVideos([]); // Clear videos on error
+      setHasMoreVideos(false);
     } finally {
       setLoadingVideos(false);
     }
   }, []);
+
+  // Centralized function to load more videos for infinite scroll
+  const loadMoreVideos = useCallback(async () => {
+    if (loadingMoreVideos || !hasMoreVideos) return;
+
+    setLoadingMoreVideos(true);
+    try {
+      const nextPage = currentPage + 1;
+      const { videos: fetchedVideos, total } = await getPaginatedVideos(nextPage * VIDEOS_PER_PAGE, VIDEOS_PER_PAGE);
+      setVideos(prevVideos => [...prevVideos, ...fetchedVideos]);
+      setCurrentPage(nextPage);
+      setHasMoreVideos((currentPage + 1) * VIDEOS_PER_PAGE < total); // Check if there are more pages
+    } catch (error) {
+      console.error("Falha ao carregar mais vídeos:", error);
+      setHasMoreVideos(false); // Stop trying to load more on error
+    } finally {
+      setLoadingMoreVideos(false);
+    }
+  }, [currentPage, hasMoreVideos, loadingMoreVideos]);
 
 
   useEffect(() => {
@@ -89,7 +116,7 @@ const App: React.FC = () => {
     
     checkAuth();
     fetchAllConfigs();
-    refreshVideos(); // Initial fetch of videos
+    loadInitialVideos(); // Initial fetch of videos for the first page
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -200,7 +227,10 @@ const App: React.FC = () => {
           adsenseConfig={adsenseConfig} // Pass updated adsense config
           videos={videos} // Pass videos from App.tsx
           loadingVideos={loadingVideos} // Pass loading state for videos
-          refreshVideos={refreshVideos} // Pass the refresh callback
+          loadMoreVideos={loadMoreVideos} // Pass the load more callback
+          hasMoreVideos={hasMoreVideos} // Pass if there are more videos to load
+          loadingMoreVideos={loadingMoreVideos} // Pass loading state for more videos
+          refreshVideos={loadInitialVideos} // Pass the refresh callback (renamed from refreshVideos)
         />
       )}
       {currentRoute === AppRoute.ADMIN && currentUser && currentUser.isAdmin && (
@@ -210,7 +240,7 @@ const App: React.FC = () => {
           onUpdateGlobalAdsenseConfig={updateGlobalAdsenseConfig}
           onUpdateGlobalAppSettings={updateGlobalAppSettings}
           onUpdateGlobalRewardConfig={updateGlobalRewardConfig}
-          refreshVideos={refreshVideos} // Pass the refresh callback
+          refreshVideos={loadInitialVideos} // Pass the refresh callback (renamed from refreshVideos)
         />
       )}
     </div>

@@ -7,7 +7,11 @@ import Input from '../shared/Input';
 import Modal from '../shared/Modal';
 import { PlusCircleIcon, PencilIcon, TrashIcon, PlayIcon, PauseIcon, EyeIcon } from '../icons/HeroIcons';
 
-const VideoManagement: React.FC = () => {
+interface VideoManagementProps {
+  refreshVideos: () => Promise<void>; // New prop: callback to trigger global video list refresh
+}
+
+const VideoManagement: React.FC<VideoManagementProps> = ({ refreshVideos }) => {
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -20,7 +24,8 @@ const VideoManagement: React.FC = () => {
   const fetchVideos = async () => {
     setLoading(true);
     try {
-      const fetchedVideos = await getAllVideos();
+      // Use getAllVideos to get the full list for admin panel
+      const fetchedVideos = await getAllVideos(); 
       setVideos(fetchedVideos);
     } catch (err) {
       setError('Falha ao buscar vídeos.');
@@ -74,7 +79,8 @@ const VideoManagement: React.FC = () => {
         setShowAddModal(false);
         setShowEditModal(false);
         setCurrentVideo(null);
-        fetchVideos();
+        fetchVideos(); // Refresh admin's local list
+        await refreshVideos(); // Trigger global video list refresh
       } catch (err) {
         setError('Falha ao salvar vídeo.');
         console.error(err);
@@ -90,7 +96,8 @@ const VideoManagement: React.FC = () => {
     setLoading(true);
     try {
       await updateVideoData({ ...video, isActive: !video.isActive });
-      fetchVideos();
+      fetchVideos(); // Refresh admin's local list
+      await refreshVideos(); // Trigger global video list refresh
     } catch (err) {
       setError('Falha ao alterar o status do vídeo.');
       console.error(err);
@@ -109,7 +116,8 @@ const VideoManagement: React.FC = () => {
       setLoading(true);
       try {
         await deleteVideo(videoToDelete);
-        fetchVideos();
+        fetchVideos(); // Refresh admin's local list
+        await refreshVideos(); // Trigger global video list refresh
         setShowDeleteModal(false);
         setVideoToDelete(null);
       } catch (err) {

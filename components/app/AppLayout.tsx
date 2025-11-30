@@ -16,18 +16,17 @@ interface AppLayoutProps {
   adsenseConfig: AdsenseConfig;
   videos: Video[]; // Now received as prop
   loadingVideos: boolean; // Now received as prop
-  refreshVideos: () => Promise<void>; // Now received as prop
+  loadMoreVideos: () => Promise<void>; // New prop: callback to load more videos
+  hasMoreVideos: boolean; // New prop: indicates if there are more videos to load
+  loadingMoreVideos: boolean; // New prop: loading state for infinite scroll
+  refreshVideos: () => Promise<void>; // Now received as prop (renamed from loadInitialVideos)
 }
 
-const AppLayout: React.FC<AppLayoutProps> = ({ currentUser: initialUser, onLogout, geminiApiKey, rewardConfig, adsenseConfig, videos, loadingVideos, refreshVideos }) => {
+const AppLayout: React.FC<AppLayoutProps> = ({ currentUser: initialUser, onLogout, geminiApiKey, rewardConfig, adsenseConfig, videos, loadingVideos, loadMoreVideos, hasMoreVideos, loadingMoreVideos: propLoadingMoreVideos, refreshVideos }) => {
   const [currentUser, setCurrentUser] = useState<User>(initialUser);
   const [currentPage, setCurrentPage] = useState<'feed' | 'profile' | 'rewards'>('feed');
   const [currentPlayingVideo, setCurrentPlayingVideo] = useState<Video | null>(null);
-  // Removed internal loading state for videos as it's now a prop
   const [rewardMessage, setRewardMessage] = useState<string | null>(null);
-
-  // Removed internal fetchVideos useCallback as it's now a prop (refreshVideos)
-  // Removed useEffect for fetching videos as it's handled by parent App.tsx
 
   const handleVideoWatchComplete = useCallback(async (videoId: string) => {
     const updatedUser = await addVideoReward(currentUser.id, videoId);
@@ -100,6 +99,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ currentUser: initialUser, onLogou
                 onUpdatePreferences={handleUpdatePreferences}
                 geminiApiKey={geminiApiKey}
                 adsenseConfig={adsenseConfig}
+                loadMoreVideos={loadMoreVideos} // Pass load more callback
+                hasMoreVideos={hasMoreVideos} // Pass has more videos state
+                loadingMoreVideos={propLoadingMoreVideos} // Pass loading more state
                 refreshVideos={refreshVideos} // Pass the refresh callback
               />
             )}

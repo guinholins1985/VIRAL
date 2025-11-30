@@ -10,16 +10,31 @@ import AdUnit from './AdUnit';
 
 interface VideoFeedProps {
   videos: Video[]; // Now received as prop
-  loading: boolean; // Now received as prop
+  loading: boolean; // Now received as prop (for initial load)
   onOpenVideo: (video: Video) => void;
   currentUser: User;
   onUpdatePreferences: (preferences: string[]) => void;
   geminiApiKey: string;
   adsenseConfig: AdsenseConfig;
+  loadMoreVideos: () => Promise<void>; // New prop: callback to load more videos
+  hasMoreVideos: boolean; // New prop: indicates if there are more videos to load
+  loadingMoreVideos: boolean; // New prop: loading state for infinite scroll
   refreshVideos: () => Promise<void>; // Now received as prop
 }
 
-const VideoFeed: React.FC<VideoFeedProps> = ({ videos, loading, onOpenVideo, currentUser, onUpdatePreferences, geminiApiKey, adsenseConfig, refreshVideos }) => {
+const VideoFeed: React.FC<VideoFeedProps> = ({
+  videos,
+  loading,
+  onOpenVideo,
+  currentUser,
+  onUpdatePreferences,
+  geminiApiKey,
+  adsenseConfig,
+  loadMoreVideos,
+  hasMoreVideos,
+  loadingMoreVideos,
+  refreshVideos
+}) => {
   const [recommendation, setRecommendation] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [preferenceInput, setPreferenceInput] = useState<string>('');
@@ -54,6 +69,19 @@ const VideoFeed: React.FC<VideoFeedProps> = ({ videos, loading, onOpenVideo, cur
     const newPreferences = currentUser.preferences.filter(pref => pref !== prefToRemove);
     onUpdatePreferences(newPreferences);
   };
+
+  // Infinite Scroll Logic
+  const handleScroll = useCallback(() => {
+    // Check if user has scrolled near the bottom of the page
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 && hasMoreVideos && !loadingMoreVideos) {
+      loadMoreVideos();
+    }
+  }, [hasMoreVideos, loadingMoreVideos, loadMoreVideos]);
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [handleScroll]);
 
 
   return (
@@ -99,7 +127,7 @@ const VideoFeed: React.FC<VideoFeedProps> = ({ videos, loading, onOpenVideo, cur
       </div>
 
 
-      {loading ? ( // Use prop loading for video list
+      {loading && videos.length === 0 ? ( // Display initial loading spinner only if no videos are loaded yet
         <div className="flex items-center justify-center p-8">
           <LoadingSpinner size="lg" />
           <p className="ml-4 text-white">Carregando vídeos...</p>
@@ -118,6 +146,15 @@ const VideoFeed: React.FC<VideoFeedProps> = ({ videos, loading, onOpenVideo, cur
               )}
             </React.Fragment>
           ))}
+          {loadingMoreVideos && ( // Display loading spinner for infinite scroll
+            <div className="flex items-center justify-center p-4">
+              <LoadingSpinner size="md" />
+              <p className="ml-2 text-white">Carregando mais vídeos...</p>
+            </div>
+          )}
+          {!hasMoreVideos && videos.length > 0 && ( // Message when all videos are loaded
+            <p className="text-gray-400 text-center mt-4">Você viu todos os vídeos disponíveis!</p>
+          )}
         </div>
       )}
     </div>
