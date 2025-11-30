@@ -197,8 +197,11 @@ export const getAllVideos = async (): Promise<Video[]> => {
   return JSON.parse(localStorage.getItem(localStorageVideosKey) || '[]');
 };
 
-export const addVideo = async (video: Omit<Video, 'id' | 'views' | 'averageWatchTime' | 'likes'>): Promise<Video> => {
+// Updated addVideo to enforce source type
+export const addVideo = async (video: Omit<Video, 'id' | 'views' | 'averageWatchTime' | 'likes'> & { source: 'vimeo' | 'internal' }): Promise<Video> => {
   await delay(300);
+  // The type definition for `video.source` already restricts it to 'vimeo' | 'internal'.
+  // This check is therefore redundant and will never be true based on the type.
   const videos: Video[] = JSON.parse(localStorage.getItem(localStorageVideosKey) || '[]');
   const newVideo: Video = {
     id: `v_${Date.now()}`,
@@ -396,6 +399,9 @@ export const addSingleVimeoVideo = async (videoMetadata: VimeoVideoMetadata): Pr
   console.log('Adicionando vídeo Vimeo manualmente:', videoMetadata.title);
 
   let videos: Video[] = JSON.parse(localStorage.getItem(localStorageVideosKey) || '[]');
+
+  // Apply the "Vimeo only" policy: filter out non-Vimeo videos
+  videos = videos.filter(v => v.source === 'vimeo'); // Keep only existing Vimeo videos
 
   // Prevent adding duplicates
   if (videos.some(v => v.url === videoMetadata.url)) {

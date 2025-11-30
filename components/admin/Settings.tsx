@@ -17,7 +17,7 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings, refreshV
     appLogoUrl: 'https://picsum.photos/50/50?random=logo',
     privacyPolicyUrl: '#',
     termsOfServiceUrl: '#',
-    youtubeApiKey: 'YOUR_YOUTUBE_API_KEY',
+    // youtubeApiKey: 'YOUR_YOUTUBE_API_KEY', // Removed
     vimeoApiKey: 'YOUR_VIMEO_API_KEY',
     geminiApiKey: 'YOUR_GEMINI_API_KEY',
     vimeoUserId: '',
@@ -219,15 +219,7 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings, refreshV
           Estas chaves são cruciais para a funcionalidade do aplicativo. Manuseie com cuidado.
           <br/>(Para esta demo, as chaves são mockadas e apenas simuladas no frontend.)
         </p>
-        <Input
-          label="Chave da API de Dados do YouTube"
-          id="youtubeApiKey"
-          name="youtubeApiKey"
-          type="password"
-          value={appSettings.youtubeApiKey}
-          onChange={handleChange}
-          className="mb-4"
-        />
+        {/* Removed YouTube API Key input */}
         <Input
           label="Chave da API Vimeo"
           id="vimeoApiKey"

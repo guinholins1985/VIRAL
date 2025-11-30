@@ -14,7 +14,7 @@ export interface Video {
   title: string;
   thumbnail: string;
   duration: number; // in seconds
-  source: 'youtube' | 'vimeo' | 'internal';
+  source: 'vimeo' | 'internal'; // Changed: Removed 'youtube'
   url: string;
   views: number;
   averageWatchTime: number; // in seconds
@@ -94,10 +94,9 @@ export interface AppSettings {
   appLogoUrl: string;
   privacyPolicyUrl: string;
   termsOfServiceUrl: string;
-  youtubeApiKey: string;
+  // youtubeApiKey: string; // Removed as per request
   vimeoApiKey: string;
   geminiApiKey: string;
-  // vimeoAccessToken?: string; // Removed as per request
   vimeoUserId?: string; // Added for Vimeo sync
 }
 

@@ -19,22 +19,15 @@ const VideoPlayerPage: React.FC<VideoPlayerPageProps> = ({ video, onVideoEnded, 
   const intervalRef = useRef<number | null>(null);
 
   const getEmbedUrl = (url: string, source: Video['source']) => {
-    if (source === 'youtube') {
-      const videoIdMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
-      const playlistMatch = url.match(/[?&]list=([^&]+)/);
-      if (videoIdMatch && videoIdMatch[1]) {
-        return `https://www.youtube.com/embed/${videoIdMatch[1]}?autoplay=1&controls=1&modestbranding=1&rel=0`;
-      } else if (playlistMatch && playlistMatch[1]) {
-        // For playlists, just embed the playlist directly. Autoplay might not work reliably for initial video in playlist.
-        return `https://www.youtube.com/embed/videoseries?list=${playlistMatch[1]}&autoplay=1&controls=1&modestbranding=1&rel=0`;
-      }
-    } else if (source === 'vimeo') {
+    // Only support Vimeo embedding
+    if (source === 'vimeo') {
       const vimeoIdMatch = url.match(/(?:vimeo\.com\/)(?:channels\/[^\/]+\/)?(\d+)/);
       if (vimeoIdMatch && vimeoIdMatch[1]) {
         return `https://player.vimeo.com/video/${vimeoIdMatch[1]}?autoplay=1&controls=1&byline=0&portrait=0`;
       }
     }
-    return ''; // Fallback for unsupported URLs or errors
+    // Fallback for unsupported URLs or errors, now explicitly excluding YouTube
+    return ''; 
   };
 
   const embedUrl = getEmbedUrl(video.url, video.source);

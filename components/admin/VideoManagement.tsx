@@ -40,7 +40,7 @@ const VideoManagement: React.FC = () => {
       url: '',
       thumbnail: '',
       duration: 0,
-      source: 'youtube', // Default source
+      source: 'vimeo', // Default source changed from 'youtube' to 'vimeo'
       isActive: true,
     });
     setShowAddModal(true);
@@ -62,13 +62,14 @@ const VideoManagement: React.FC = () => {
   };
 
   const handleSaveVideo = async () => {
-    if (currentVideo && currentVideo.title && currentVideo.url && currentVideo.thumbnail && currentVideo.duration !== undefined && currentVideo.source) {
+    // Ensure all required fields are filled and source is valid
+    if (currentVideo && currentVideo.title && currentVideo.url && currentVideo.thumbnail && currentVideo.duration !== undefined && currentVideo.source && (currentVideo.source === 'vimeo' || currentVideo.source === 'internal')) {
       setLoading(true);
       try {
         if (currentVideo.id) { // Editing existing video
           await updateVideoData(currentVideo as Video);
         } else { // Adding new video
-          await addVideo(currentVideo as Omit<Video, 'id' | 'views' | 'averageWatchTime' | 'likes'>);
+          await addVideo(currentVideo as Omit<Video, 'id' | 'views' | 'averageWatchTime' | 'likes'> & { source: 'vimeo' | 'internal' });
         }
         setShowAddModal(false);
         setShowEditModal(false);
@@ -81,7 +82,7 @@ const VideoManagement: React.FC = () => {
         setLoading(false);
       }
     } else {
-      setError('Por favor, preencha todos os campos obrigatórios.');
+      setError('Por favor, preencha todos os campos obrigatórios e selecione uma fonte válida (Vimeo ou Interno).');
     }
   };
 
@@ -209,11 +210,10 @@ const VideoManagement: React.FC = () => {
           <select
             id="video-source"
             name="source"
-            value={currentVideo?.source || 'youtube'}
+            value={currentVideo?.source || 'vimeo'} // Default to 'vimeo'
             onChange={handleChange}
             className="shadow border border-gray-600 rounded w-full py-2 px-3 text-gray-300 leading-tight focus:outline-none focus:shadow-outline bg-gray-700"
           >
-            <option value="youtube">YouTube</option>
             <option value="vimeo">Vimeo</option>
             <option value="internal">Interno</option>
           </select>
