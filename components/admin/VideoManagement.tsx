@@ -8,10 +8,12 @@ import Modal from '../shared/Modal';
 import { PlusCircleIcon, PencilIcon, TrashIcon, PlayIcon, PauseIcon, EyeIcon } from '../icons/HeroIcons';
 
 interface VideoManagementProps {
-  refreshVideos: () => Promise<void>; // New prop: callback to trigger global video list refresh
+  refreshVideos: () => Promise<void>; // Callback to trigger global video list refresh (for user feed)
+  adminVideosRefreshKey: number; // Key to trigger local admin video list refresh
+  onAdminVideosRefreshTriggered: () => void; // Callback to notify AdminLayout of changes
 }
 
-const VideoManagement: React.FC<VideoManagementProps> = ({ refreshVideos }) => {
+const VideoManagement: React.FC<VideoManagementProps> = ({ refreshVideos, adminVideosRefreshKey, onAdminVideosRefreshTriggered }) => {
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,8 +38,10 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ refreshVideos }) => {
   };
 
   useEffect(() => {
+    // This useEffect will re-run whenever adminVideosRefreshKey changes,
+    // ensuring the admin's video list is up-to-date with global changes
     fetchVideos();
-  }, []);
+  }, [adminVideosRefreshKey]); // Dependency added to react to global changes
 
   const handleAddVideoClick = () => {
     setCurrentVideo({
@@ -80,7 +84,8 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ refreshVideos }) => {
         setShowEditModal(false);
         setCurrentVideo(null);
         fetchVideos(); // Refresh admin's local list
-        await refreshVideos(); // Trigger global video list refresh
+        await refreshVideos(); // Trigger global video list refresh (for user feed)
+        onAdminVideosRefreshTriggered(); // Trigger refresh for other admin components (like itself when called from Settings)
       } catch (err) {
         setError('Falha ao salvar vídeo.');
         console.error(err);
@@ -97,7 +102,8 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ refreshVideos }) => {
     try {
       await updateVideoData({ ...video, isActive: !video.isActive });
       fetchVideos(); // Refresh admin's local list
-      await refreshVideos(); // Trigger global video list refresh
+      await refreshVideos(); // Trigger global video list refresh (for user feed)
+      onAdminVideosRefreshTriggered(); // Trigger refresh for other admin components
     } catch (err) {
       setError('Falha ao alterar o status do vídeo.');
       console.error(err);
@@ -117,7 +123,8 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ refreshVideos }) => {
       try {
         await deleteVideo(videoToDelete);
         fetchVideos(); // Refresh admin's local list
-        await refreshVideos(); // Trigger global video list refresh
+        await refreshVideos(); // Trigger global video list refresh (for user feed)
+        onAdminVideosRefreshTriggered(); // Trigger refresh for other admin components
         setShowDeleteModal(false);
         setVideoToDelete(null);
       } catch (err) {

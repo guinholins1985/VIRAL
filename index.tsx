@@ -98,7 +98,7 @@ const App: React.FC = () => {
       const { videos: fetchedVideos, total } = await getPaginatedVideos(nextPage * VIDEOS_PER_PAGE, VIDEOS_PER_PAGE); 
       setVideos(prevVideos => [...prevVideos, ...fetchedVideos]);
       setCurrentPage(nextPage);
-      setHasMoreVideos((currentPage + 1) * VIDEOS_PER_PAGE < total); // Check if there are more pages
+      setHasMoreVideos((nextPage + 1) * VIDEOS_PER_PAGE < total); // Check if there are more pages
     } catch (error) {
       console.error("Falha ao carregar mais vídeos:", error);
       setHasMoreVideos(false); // Stop trying to load more on error
@@ -197,7 +197,7 @@ const App: React.FC = () => {
     setCurrentRoute(route);
   }, []);
 
-  if (loadingAppConfig || !adsenseConfig || !appSettings || !rewardConfig) {
+  if (loadingAppConfig || loadingVideos || !adsenseConfig || !appSettings || !rewardConfig) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-900">
         <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>

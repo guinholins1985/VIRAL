@@ -37,6 +37,13 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
   refreshVideos, // Destructure new prop
 }) => {
   const [currentPage, setCurrentPage] = useState<AdminPage>(AdminPage.DASHBOARD);
+  // State to force refresh of admin video list when changes happen elsewhere in admin
+  const [adminVideosRefreshKey, setAdminVideosRefreshKey] = useState(0);
+
+  const onAdminVideosRefreshTriggered = () => {
+    setAdminVideosRefreshKey(prev => prev + 1);
+  };
+
 
   return (
     <div className="flex min-h-screen bg-gray-950 text-white">
@@ -58,13 +65,20 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
         <main className="flex-1 p-6 lg:p-10 overflow-auto">
           {currentPage === AdminPage.DASHBOARD && <AdminDashboard />}
           {currentPage === AdminPage.USERS && <UserManagement />}
-          {currentPage === AdminPage.VIDEOS && <VideoManagement refreshVideos={refreshVideos} />}
+          {currentPage === AdminPage.VIDEOS && (
+            <VideoManagement
+              refreshVideos={refreshVideos}
+              adminVideosRefreshKey={adminVideosRefreshKey} // Pass the refresh key
+              onAdminVideosRefreshTriggered={onAdminVideosRefreshTriggered} // Pass the trigger
+            />
+          )}
           {currentPage === AdminPage.REWARDS && <RewardSystemConfig onUpdateGlobalRewardConfig={onUpdateGlobalRewardConfig} />}
           {currentPage === AdminPage.ADSENSE && <AdsenseConfig onUpdateGlobalAdsenseConfig={onUpdateGlobalAdsenseConfig} />}
           {currentPage === AdminPage.SETTINGS && (
             <Settings
               onUpdateGlobalAppSettings={onUpdateGlobalAppSettings}
-              refreshVideos={refreshVideos} // Pass the refresh callback
+              refreshVideos={refreshVideos}
+              onAdminVideosRefreshTriggered={onAdminVideosRefreshTriggered} // Pass the trigger
             />
           )}
         </main>
