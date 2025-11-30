@@ -322,29 +322,34 @@ export const updateAppSettings = async (settings: AppSettings): Promise<void> =>
   localStorage.setItem(localStorageAppSettingsKey, JSON.stringify(settings));
 };
 
-// Helper function to generate a consistent set of mock Vimeo videos for a user
+/**
+ * Helper function para simular a geração de uma lista consistente de vídeos Vimeo
+ * para um dado ID de usuário.
+ * Esta função simula a "extração de todos os vídeos" de uma conta Vimeo.
+ * Gera entre 15 e 20 vídeos mockados únicos.
+ * @param userId O ID do usuário Vimeo para o qual gerar vídeos.
+ * @returns Uma lista de vídeos mockados.
+ */
 const generateMockVimeoVideosForUser = (userId: string): Video[] => {
-  const seed = parseInt(userId) || 12345; // Use userId as a seed for consistent generation
+  const seed = parseInt(userId) || 12345; // Usar userId como seed para geração consistente
   const rand = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
 
-  // Use a simple pseudo-random generator for consistent results based on seed
-  const seededRandom = (() => {
-    let s = seed;
-    return () => {
-      s = (s * 9301 + 49297) % 233280;
-      return s / 233280;
-    };
-  })();
+  // Gerador pseudo-aleatório simples para resultados consistentes baseados no seed
+  let s = seed;
+  const seededRandom = () => {
+    s = (s * 9301 + 49297) % 233280;
+    return s / 233280;
+  };
 
-  const numVideos = rand(3, 5); // Generate between 3 and 5 videos
+  const numVideos = rand(15, 20); // Gerar entre 15 e 20 vídeos para simular "todos os vídeos"
   const videos: Video[] = [];
   for (let i = 1; i <= numVideos; i++) {
-    const videoVimeoId = `${Math.floor(seededRandom() * 900000000) + 100000000}`; // Random 9-digit Vimeo-like ID
+    const videoVimeoId = `${Math.floor(seededRandom() * 900000000) + 100000000}`; // ID aleatório de 9 dígitos estilo Vimeo
     videos.push({
       id: `v_vimeo_sync_${userId}_${videoVimeoId}`,
       title: `Vimeo de ${userId}: Vídeo Automatizado #${i}`,
-      thumbnail: `https://i.vimeocdn.com/video/${videoVimeoId}_295x166.jpg`, // Mock Vimeo thumbnail format
-      duration: rand(120, 600), // 2-10 minutes
+      thumbnail: `https://i.vimeocdn.com/video/${videoVimeoId}_295x166.jpg`, // Formato de thumbnail mock do Vimeo
+      duration: rand(120, 600), // 2-10 minutos
       source: 'vimeo',
       url: `https://vimeo.com/${videoVimeoId}`,
       views: rand(100, 5000),
@@ -358,8 +363,16 @@ const generateMockVimeoVideosForUser = (userId: string): Video[] => {
   return videos;
 };
 
+/**
+ * Simula a sincronização automática de uma conta Vimeo.
+ * Esta função "extrai todos os vídeos da conta sincronizada Vimeo" e os "salva todos"
+ * sobrescrevendo completamente a lista existente de vídeos no sistema com os vídeos Vimeo mockados.
+ * Isso garante que APENAS os vídeos da conta Vimeo sincronizada estejam presentes.
+ * @param vimeoUserId O ID do usuário Vimeo.
+ * @returns Uma promessa que resolve para true se a sincronização for bem-sucedida.
+ */
 export const syncVimeoAccount = async (vimeoUserId?: string): Promise<boolean> => {
-  await delay(1500); // Simulate API call
+  await delay(1500); // Simula chamada de API
   console.log('Tentando sincronizar conta Vimeo (automático) com ID de usuário:', vimeoUserId);
 
   if (!vimeoUserId) {
@@ -369,15 +382,22 @@ export const syncVimeoAccount = async (vimeoUserId?: string): Promise<boolean> =
 
   const newVimeoVideos = generateMockVimeoVideosForUser(vimeoUserId);
 
-  // Overwrite the entire video list in localStorage with ONLY the newly generated Vimeo videos
+  // Sobrescreve a lista COMPLETA de vídeos no localStorage SOMENTE com os vídeos Vimeo recém-gerados.
+  // Isso atende ao requisito "exclui definitivamente videos do youtube, ... adiciona apenas videos da conta vimeo"
   localStorage.setItem(localStorageVideosKey, JSON.stringify(newVimeoVideos));
   
   console.log(`Conta Vimeo para o usuário ${vimeoUserId} sincronizada (automática) com sucesso (mock)! ${newVimeoVideos.length} vídeos adicionados.`);
   return true;
 };
 
+/**
+ * Simula a busca de metadados de vídeos de um usuário Vimeo para pré-visualização.
+ * Esta função também "extrai todos os vídeos" da conta sincronizada (mockados).
+ * @param vimeoUserId O ID do usuário Vimeo.
+ * @returns Uma promessa que resolve para uma lista de metadados de vídeos Vimeo.
+ */
 export const fetchVimeoUserVideos = async (vimeoUserId: string): Promise<VimeoVideoMetadata[]> => {
-  await delay(1000); // Simulate API call
+  await delay(1000); // Simula chamada de API
   console.log('Buscando vídeos Vimeo para pré-visualização com ID de usuário:', vimeoUserId);
 
   if (!vimeoUserId) {
@@ -385,7 +405,7 @@ export const fetchVimeoUserVideos = async (vimeoUserId: string): Promise<VimeoVi
     throw new Error('ID de usuário Vimeo não fornecido.');
   }
 
-  const mockVideos = generateMockVimeoVideosForUser(vimeoUserId); // Use the same generator for consistency
+  const mockVideos = generateMockVimeoVideosForUser(vimeoUserId); // Usar o mesmo gerador para consistência
   const metadataList: VimeoVideoMetadata[] = mockVideos.map(v => ({
     id: v.id,
     title: v.title,
@@ -398,23 +418,30 @@ export const fetchVimeoUserVideos = async (vimeoUserId: string): Promise<VimeoVi
   return metadataList;
 };
 
+/**
+ * Adiciona um único vídeo Vimeo manualmente à lista de vídeos.
+ * Aplica a política de exclusividade "apenas vídeos Vimeo", filtrando outros tipos de vídeo.
+ * @param videoMetadata Metadados do vídeo Vimeo a ser adicionado.
+ * @returns Uma promessa que resolve para o vídeo adicionado.
+ */
 export const addSingleVimeoVideo = async (videoMetadata: VimeoVideoMetadata): Promise<Video> => {
-  await delay(500); // Simulate API call
+  await delay(500); // Simula chamada de API
   console.log('Adicionando vídeo Vimeo manualmente:', videoMetadata.title);
 
   let videos: Video[] = JSON.parse(localStorage.getItem(localStorageVideosKey) || '[]');
 
-  // Apply the "Vimeo only" policy: filter out non-Vimeo videos
-  videos = videos.filter(v => v.source === 'vimeo'); // Keep only existing Vimeo videos
+  // Aplica a política "apenas Vimeo": filtra todos os vídeos que NÃO são Vimeo.
+  // Isso atende ao requisito "exclui definitivamente videos do youtube, ... adiciona apenas videos da conta vimeo"
+  videos = videos.filter(v => v.source === 'vimeo'); // Mantém apenas vídeos Vimeo existentes
 
-  // Prevent adding duplicates
+  // Previne adição de duplicatas
   if (videos.some(v => v.url === videoMetadata.url)) {
     console.warn(`Vídeo ${videoMetadata.title} já existe. Não foi adicionado novamente.`);
     throw new Error(`Vídeo "${videoMetadata.title}" já existe na lista.`);
   }
 
   const newVideo: Video = {
-    id: `v_${Date.now()}_${videoMetadata.id}`, // Ensure unique ID
+    id: `v_${Date.now()}_${videoMetadata.id}`, // Garante ID único
     title: videoMetadata.title,
     thumbnail: videoMetadata.thumbnail,
     duration: videoMetadata.duration,

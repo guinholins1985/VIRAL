@@ -9,9 +9,10 @@ import { AppSettings, VimeoVideoMetadata } from '../../types';
 interface SettingsProps {
   onUpdateGlobalAppSettings: () => Promise<void>;
   refreshVideos: () => Promise<void>; // Updated prop name to reflect global refresh
+  onAdminVideosRefreshTriggered: () => void; // New prop for admin video list refresh
 }
 
-const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings, refreshVideos }) => {
+const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings, refreshVideos, onAdminVideosRefreshTriggered }) => {
   const [appSettings, setAppSettings] = useState<AppSettings>({
     appName: 'CASHVIRAL',
     appLogoUrl: 'https://picsum.photos/50/50?random=logo',
@@ -96,9 +97,11 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings, refreshV
     }
 
     try {
+      // Esta função simula a "extração de todos os vídeos da conta Vimeo sincronizada"
+      // e os lista para pré-visualização.
       const videos = await fetchVimeoUserVideos(appSettings.vimeoUserId!);
       setAvailableVimeoVideos(videos);
-      setVimeoSyncSuccess(true); // Indicate success of fetch, not necessarily sync
+      setVimeoSyncSuccess(true); // Indica sucesso da busca, não necessariamente da sincronização
     } catch (err) {
       setFetchVimeoError((err as Error).message || 'Falha ao buscar vídeos da conta Vimeo.');
       setVimeoSyncSuccess(false);
@@ -119,11 +122,14 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings, refreshV
     }
 
     try {
+      // Esta função "extrai todos os vídeos da conta sincronizada vimeo e salva todos"
+      // sobrescrevendo a lista global de vídeos.
       await syncVimeoAccount(appSettings.vimeoUserId!);
       setVimeoSyncSuccess(true);
       setVimeoSyncError('Sincronização de conta Vimeo bem-sucedida! Vídeos da conta foram adicionados/atualizados.');
-      await refreshVideos(); // Trigger global video list refresh
-      setAvailableVimeoVideos([]); // Clear fetched videos after automatic sync
+      await refreshVideos(); // Aciona o refresh global do feed de vídeos (App.tsx)
+      await onAdminVideosRefreshTriggered(); // Aciona o refresh da lista do admin (VideoManagement.tsx)
+      setAvailableVimeoVideos([]); // Limpa os vídeos pré-buscados após a sincronização automática
       setTimeout(() => {setVimeoSyncSuccess(null); setVimeoSyncError(null);}, 5000);
     } catch (err) {
       setVimeoSyncSuccess(false);
@@ -141,10 +147,11 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings, refreshV
 
     try {
       await addSingleVimeoVideo(video);
-      await refreshVideos(); // Trigger global video list refresh
+      await refreshVideos(); // Aciona o refresh global do feed de vídeos (App.tsx)
+      await onAdminVideosRefreshTriggered(); // Aciona o refresh da lista do admin (VideoManagement.tsx)
       setVimeoSyncSuccess(true);
-      setVimeoSyncError('Vídeo Vimeo adicionado com sucesso!'); // Use success message here
-      // No need to clear availableVimeoVideos, just show success for this video
+      setVimeoSyncError('Vídeo Vimeo adicionado com sucesso!'); // Usa mensagem de sucesso aqui
+      // Não é necessário limpar availableVimeoVideos, apenas mostrar sucesso para este vídeo
       setTimeout(() => {setVimeoSyncSuccess(null); setVimeoSyncError(null);}, 3000);
     } catch (err) {
       setVimeoSyncSuccess(false);
@@ -275,7 +282,7 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings, refreshV
           </Button>
         </div>
 
-        {(vimeoSyncSuccess !== null || vimeoSyncError) && ( // Show general sync status
+        {(vimeoSyncSuccess !== null || vimeoSyncError) && ( // Mostra o status geral da sincronização
           <p className={`text-sm mt-2 flex items-center ${vimeoSyncSuccess ? 'text-green-400' : 'text-red-500'}`}>
             {vimeoSyncSuccess ? <CheckCircleIcon className="h-5 w-5 mr-1"/> : <XCircleIcon className="h-5 w-5 mr-1"/>}
             {vimeoSyncError || (vimeoSyncSuccess ? 'Operação concluída com sucesso!' : 'Falha na operação.')}
@@ -294,6 +301,7 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings, refreshV
         {availableVimeoVideos.length > 0 && (
           <div className="mt-6 p-4 bg-gray-700 rounded-lg border border-gray-600">
             <h4 className="text-lg font-bold text-white mb-3">
+              {/* Exibe a quantidade exata de vídeos encontrados */}
               {availableVimeoVideos.length} Vídeos disponíveis para sincronizar:
             </h4>
             <div className="max-h-60 overflow-y-auto pr-2">
