@@ -19,7 +19,7 @@ interface VideoFeedProps {
   loadMoreVideos: () => Promise<void>; // New prop: callback to load more videos
   hasMoreVideos: boolean; // New prop: indicates if there are more videos to load
   loadingMoreVideos: boolean; // New prop: loading state for infinite scroll
-  refreshVideos: () => Promise<void>; // Now received as prop
+  loadInitialVideos: () => Promise<void>; // Now received as prop (renamed from refreshVideos to loadInitialVideos)
 }
 
 const VideoFeed: React.FC<VideoFeedProps> = ({
@@ -33,7 +33,7 @@ const VideoFeed: React.FC<VideoFeedProps> = ({
   loadMoreVideos,
   hasMoreVideos,
   loadingMoreVideos,
-  refreshVideos
+  loadInitialVideos // Renamed from refreshVideos
 }) => {
   const [recommendation, setRecommendation] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);

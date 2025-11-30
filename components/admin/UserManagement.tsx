@@ -7,7 +7,12 @@ import Input from '../shared/Input';
 import Modal from '../shared/Modal';
 import { PencilIcon, TrashIcon, BanIcon, CheckCircleIcon, XCircleIcon, CurrencyDollarIcon } from '../icons/HeroIcons';
 
-const UserManagement: React.FC = () => {
+interface UserManagementProps {
+  refreshCurrentUser: () => Promise<void>; // Callback to refresh global currentUser state
+  currentUser: User; // Current logged-in admin user to prevent self-deletion
+}
+
+const UserManagement: React.FC<UserManagementProps> = ({ refreshCurrentUser, currentUser }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -52,7 +57,8 @@ const UserManagement: React.FC = () => {
       try {
         await updateUserData(editingUser);
         setEditingUser(null);
-        fetchUsers(); // Refresh the list
+        fetchUsers(); // Refresh the local list
+        await refreshCurrentUser(); // Trigger global currentUser refresh in App.tsx
       } catch (err) {
         setError('Falha ao atualizar usuário.');
         console.error(err);
@@ -63,12 +69,17 @@ const UserManagement: React.FC = () => {
   };
 
   const handleBanUser = async (userId: string) => {
+    if (userId === currentUser.id) {
+        alert("Erro: Você não pode banir/ativar sua própria conta de administrador.");
+        return;
+    }
     setLoading(true);
     try {
       const user = users.find(u => u.id === userId);
       if (user) {
         await updateUserData({ ...user, isActive: !user.isActive });
         fetchUsers();
+        await refreshCurrentUser(); // Trigger global currentUser refresh in App.tsx
       }
     } catch (err) {
       setError('Falha ao alterar o status do usuário.');
@@ -86,6 +97,7 @@ const UserManagement: React.FC = () => {
         if (user) {
           await updateUserData({ ...user, balance: 0 });
           fetchUsers();
+          await refreshCurrentUser(); // Trigger global currentUser refresh in App.tsx
         }
       } catch (err) {
         setError('Falha ao zerar o saldo do usuário.');
@@ -97,6 +109,10 @@ const UserManagement: React.FC = () => {
   };
 
   const confirmDelete = (userId: string) => {
+    if (userId === currentUser.id) {
+        alert("Erro: Você não pode excluir sua própria conta de administrador.");
+        return;
+    }
     setUserToDelete(userId);
     setShowDeleteModal(true);
   };
@@ -106,7 +122,8 @@ const UserManagement: React.FC = () => {
       setLoading(true);
       try {
         await deleteUser(userToDelete);
-        fetchUsers();
+        fetchUsers(); // Refresh the local list
+        await refreshCurrentUser(); // Trigger global currentUser refresh in App.tsx
         setShowDeleteModal(false);
         setUserToDelete(null);
       } catch (err) {
@@ -172,7 +189,7 @@ const UserManagement: React.FC = () => {
                     <Button variant="secondary" size="sm" onClick={() => handleResetBalance(user.id)} title="Zerar Saldo">
                       <CurrencyDollarIcon className="h-5 w-5" />
                     </Button>
-                    <Button variant="danger" size="sm" onClick={() => confirmDelete(user.id)} title="Excluir">
+                    <Button variant="danger" size="sm" onClick={() => confirmDelete(user.id)} title="Excluir" disabled={user.id === currentUser.id}>
                       <TrashIcon className="h-5 w-5" />
                     </Button>
                   </div>
@@ -186,7 +203,7 @@ const UserManagement: React.FC = () => {
       {editingUser && (
         <Modal
           isOpen={!!editingUser}
-          onClose={() => setEditingUser(null)}
+          onClose={() => { setEditingUser(null); setError(null); }} // Clear error on close
           title={`Editar Usuário: ${editingUser.name}`}
           onConfirm={handleSaveUser}
         >
@@ -202,6 +219,7 @@ const UserManagement: React.FC = () => {
                 checked={editingUser.isActive}
                 onChange={handleChange}
                 className="mr-2 h-4 w-4 text-blue-600 rounded focus:ring-blue-500 border-gray-600 bg-gray-700"
+                disabled={editingUser.id === currentUser.id} // Prevent admin from deactivating self
               />
               Ativo
             </label>
@@ -215,22 +233,25 @@ const UserManagement: React.FC = () => {
                 checked={editingUser.isAdmin}
                 onChange={handleChange}
                 className="mr-2 h-4 w-4 text-blue-600 rounded focus:ring-blue-500 border-gray-600 bg-gray-700"
+                disabled={editingUser.id === currentUser.id} // Prevent admin from de-admining self
               />
               Admin
             </label>
           </div>
+          {error && <p className="text-red-500 text-center mt-3">{error}</p>} {/* Display error */}
         </Modal>
       )}
 
       <Modal
         isOpen={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
+        onClose={() => { setShowDeleteModal(false); setError(null); }} // Clear error on close
         title="Confirmar Exclusão"
         onConfirm={handleDeleteUser}
         confirmText="Excluir"
         cancelText="Cancelar"
       >
         <p className="text-gray-300">Tem certeza de que deseja excluir este usuário? Esta ação é irreversível.</p>
+        {error && <p className="text-red-500 text-center mt-3">{error}</p>} {/* Display error */}
       </Modal>
     </div>
   );

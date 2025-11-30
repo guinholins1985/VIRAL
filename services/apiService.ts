@@ -131,11 +131,13 @@ export const addVideoReward = async (userId: string, videoId: string): Promise<U
   if (userIndex !== -1 && videoIndex !== -1) {
     users[userIndex].balance = parseFloat((users[userIndex].balance + rewardAmount).toFixed(2));
     videos[videoIndex].views += 1; // Simulate view count increase
-    videos[videoIndex].averageWatchTime = Math.min(videos[videoIndex].averageWatchTime + 5, videos[videoIndex].duration); // Simulate watch time increase
+    // Simulate average watch time increase based on minWatchTime for reward, capped by video duration
+    videos[videoIndex].averageWatchTime = Math.min(videos[videoIndex].averageWatchTime + minWatchTime, videos[videoIndex].duration); 
 
     localStorage.setItem(localStorageUsersKey, JSON.stringify(users));
     localStorage.setItem(localStorageVideosKey, JSON.stringify(videos));
-    localStorage.setItem(localStorageKey, JSON.stringify(users[userIndex])); // Update current user in local storage
+    // Important: Update currentUser in localStorage to reflect new balance immediately for global state consistency
+    localStorage.setItem(localStorageKey, JSON.stringify(users[userIndex])); 
     return users[userIndex];
   }
   return null;
@@ -197,6 +199,15 @@ export const updateUserData = async (updatedUser: User): Promise<User | null> =>
   if (index !== -1) {
     users[index] = { ...users[index], ...updatedUser }; // Merge existing with updated
     localStorage.setItem(localStorageUsersKey, JSON.stringify(users));
+    
+    // Update currentUser in localStorage if the currently logged-in user's data was modified
+    const currentUserString = localStorage.getItem(localStorageKey);
+    if (currentUserString) {
+      const currentLoggedInUser: User = JSON.parse(currentUserString);
+      if (currentLoggedInUser.id === updatedUser.id) {
+        localStorage.setItem(localStorageKey, JSON.stringify(users[index]));
+      }
+    }
     return users[index];
   }
   return null;
@@ -208,6 +219,10 @@ export const deleteUser = async (userId: string): Promise<boolean> => {
   const initialLength = users.length;
   users = users.filter(u => u.id !== userId);
   localStorage.setItem(localStorageUsersKey, JSON.stringify(users));
+  // If the deleted user was the currently logged-in user, clear session
+  if (localStorage.getItem(localStorageKey) && JSON.parse(localStorage.getItem(localStorageKey)!).id === userId) {
+    localStorage.removeItem(localStorageKey);
+  }
   return users.length < initialLength;
 };
 
@@ -278,6 +293,14 @@ export const updateWithdrawalRequestStatus = async (requestId: string, status: '
         if (userIndex !== -1) {
             users[userIndex].balance -= withdrawals[index].amount;
             localStorage.setItem(localStorageUsersKey, JSON.stringify(users));
+             // Also update currentUser in localStorage if the affected user is the currently logged-in user
+            const currentUserString = localStorage.getItem(localStorageKey);
+            if (currentUserString) {
+              const currentLoggedInUser: User = JSON.parse(currentUserString);
+              if (currentLoggedInUser.id === users[userIndex].id) {
+                localStorage.setItem(localStorageKey, JSON.stringify(users[userIndex]));
+              }
+            }
         }
     }
 

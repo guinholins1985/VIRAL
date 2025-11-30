@@ -16,7 +16,8 @@ interface AdminLayoutProps {
   onUpdateGlobalAdsenseConfig: () => Promise<void>;
   onUpdateGlobalAppSettings: () => Promise<void>;
   onUpdateGlobalRewardConfig: () => Promise<void>;
-  refreshVideos: () => Promise<void>; // New prop: callback to trigger global video list refresh
+  loadInitialVideos: () => Promise<void>; // Callback to trigger global video list refresh (for user feed) (renamed from refreshVideos)
+  refreshCurrentUser: () => Promise<void>; // New prop: callback to refresh global currentUser state
 }
 
 enum AdminPage {
@@ -34,7 +35,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
   onUpdateGlobalAdsenseConfig,
   onUpdateGlobalAppSettings,
   onUpdateGlobalRewardConfig,
-  refreshVideos, // Destructure new prop
+  loadInitialVideos, // Renamed from refreshVideos
+  refreshCurrentUser, // Destructure new prop
 }) => {
   const [currentPage, setCurrentPage] = useState<AdminPage>(AdminPage.DASHBOARD);
   // State to force refresh of admin video list when changes happen elsewhere in admin
@@ -64,20 +66,30 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
 
         <main className="flex-1 p-6 lg:p-10 overflow-auto">
           {currentPage === AdminPage.DASHBOARD && <AdminDashboard />}
-          {currentPage === AdminPage.USERS && <UserManagement />}
+          {currentPage === AdminPage.USERS && (
+            <UserManagement 
+              refreshCurrentUser={refreshCurrentUser} // Pass the refresh callback
+              currentUser={currentUser} // Pass currentUser to prevent admin from deleting self
+            />
+          )}
           {currentPage === AdminPage.VIDEOS && (
             <VideoManagement
-              refreshVideos={refreshVideos}
+              loadInitialVideos={loadInitialVideos} // Pass the refresh callback (renamed from refreshVideos)
               adminVideosRefreshKey={adminVideosRefreshKey} // Pass the refresh key
               onAdminVideosRefreshTriggered={onAdminVideosRefreshTriggered} // Pass the trigger
             />
           )}
-          {currentPage === AdminPage.REWARDS && <RewardSystemConfig onUpdateGlobalRewardConfig={onUpdateGlobalRewardConfig} />}
+          {currentPage === AdminPage.REWARDS && (
+            <RewardSystemConfig 
+              onUpdateGlobalRewardConfig={onUpdateGlobalRewardConfig} 
+              refreshCurrentUser={refreshCurrentUser} // Pass the refresh callback
+            />
+          )}
           {currentPage === AdminPage.ADSENSE && <AdsenseConfig onUpdateGlobalAdsenseConfig={onUpdateGlobalAdsenseConfig} />}
           {currentPage === AdminPage.SETTINGS && (
             <Settings
               onUpdateGlobalAppSettings={onUpdateGlobalAppSettings}
-              refreshVideos={refreshVideos}
+              loadInitialVideos={loadInitialVideos} // Pass the refresh callback (renamed from refreshVideos)
               onAdminVideosRefreshTriggered={onAdminVideosRefreshTriggered} // Pass the trigger
             />
           )}

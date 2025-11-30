@@ -18,7 +18,7 @@ enum AppRoute {
 
 const App: React.FC = () => {
   const [currentRoute, setCurrentRoute] = useState<AppRoute>(AppRoute.LANDING);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null); // Global currentUser state
   const [loadingAppConfig, setLoadingAppConfig] = useState(true); // Renamed for clarity: initial app config loading
 
   // Global states for admin configurations
@@ -28,11 +28,17 @@ const App: React.FC = () => {
 
   // Global states for video list and pagination (elevated from AppLayout)
   const [videos, setVideos] = useState<Video[]>([]);
+  // FIX: Correctly initialize `loadingVideos` with `useState`
   const [loadingVideos, setLoadingVideos] = useState(true); // Initial load for the first page
   const [currentPage, setCurrentPage] = useState(0);
   const [hasMoreVideos, setHasMoreVideos] = useState(true);
   const [loadingMoreVideos, setLoadingMoreVideos] = useState(false); // For infinite scroll loading
 
+  // Centralized function to refresh global currentUser state from localStorage
+  const refreshCurrentUser = useCallback(async () => {
+    const user = await getCurrentUser();
+    setCurrentUser(user);
+  }, []);
 
   const checkAuth = useCallback(async () => {
     setLoadingAppConfig(true);
@@ -98,7 +104,8 @@ const App: React.FC = () => {
       const { videos: fetchedVideos, total } = await getPaginatedVideos(nextPage * VIDEOS_PER_PAGE, VIDEOS_PER_PAGE); 
       setVideos(prevVideos => [...prevVideos, ...fetchedVideos]);
       setCurrentPage(nextPage);
-      setHasMoreVideos((nextPage + 1) * VIDEOS_PER_PAGE < total); // Check if there are more pages
+      // Corrected: use (nextPage * VIDEOS_PER_PAGE) to accurately check if more videos exist after the current load
+      setHasMoreVideos((nextPage * VIDEOS_PER_PAGE) < total); // Check if there are more pages
     } catch (error) {
       console.error("Falha ao carregar mais vídeos:", error);
       setHasMoreVideos(false); // Stop trying to load more on error
@@ -197,6 +204,7 @@ const App: React.FC = () => {
     setCurrentRoute(route);
   }, []);
 
+  // Combined loading state
   if (loadingAppConfig || loadingVideos || !adsenseConfig || !appSettings || !rewardConfig) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-900">
@@ -232,7 +240,8 @@ const App: React.FC = () => {
           loadMoreVideos={loadMoreVideos} // Pass the load more callback
           hasMoreVideos={hasMoreVideos} // Pass if there are more videos to load
           loadingMoreVideos={loadingMoreVideos} // Pass loading state for more videos
-          refreshVideos={loadInitialVideos} // Pass the refresh callback (renamed from refreshVideos)
+          loadInitialVideos={loadInitialVideos} // Pass the refresh callback for videos (renamed from refreshVideos)
+          onUpdateCurrentUser={refreshCurrentUser} // Pass the refresh callback for currentUser
         />
       )}
       {currentRoute === AppRoute.ADMIN && currentUser && currentUser.isAdmin && (
@@ -242,7 +251,8 @@ const App: React.FC = () => {
           onUpdateGlobalAdsenseConfig={updateGlobalAdsenseConfig}
           onUpdateGlobalAppSettings={updateGlobalAppSettings}
           onUpdateGlobalRewardConfig={updateGlobalRewardConfig}
-          refreshVideos={loadInitialVideos} // Pass the refresh callback (renamed from refreshVideos)
+          loadInitialVideos={loadInitialVideos} // Pass the refresh callback for videos (renamed from refreshVideos)
+          refreshCurrentUser={refreshCurrentUser} // Pass the refresh callback for currentUser
         />
       )}
     </div>

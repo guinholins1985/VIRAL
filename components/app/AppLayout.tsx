@@ -4,7 +4,7 @@ import VideoFeed from './VideoFeed';
 import UserProfile from './UserProfile';
 import RewardTracker from './RewardTracker';
 import { User, Video, RewardConfig, AdsenseConfig } from '../../types';
-import { addVideoReward, getCurrentUser, updateUserPreferences } from '../../services/apiService';
+import { addVideoReward, updateUserPreferences } from '../../services/apiService';
 import VideoPlayerPage from './VideoPlayerPage';
 import LoadingSpinner from '../shared/LoadingSpinner';
 
@@ -19,11 +19,13 @@ interface AppLayoutProps {
   loadMoreVideos: () => Promise<void>; // New prop: callback to load more videos
   hasMoreVideos: boolean; // New prop: indicates if there are more videos to load
   loadingMoreVideos: boolean; // New prop: loading state for infinite scroll
-  refreshVideos: () => Promise<void>; // Now received as prop (renamed from loadInitialVideos)
+  loadInitialVideos: () => Promise<void>; // Now received as prop (renamed from refreshVideos to loadInitialVideos)
+  onUpdateCurrentUser: () => Promise<void>; // New prop: callback to refresh global currentUser state
 }
 
-const AppLayout: React.FC<AppLayoutProps> = ({ currentUser: initialUser, onLogout, geminiApiKey, rewardConfig, adsenseConfig, videos, loadingVideos, loadMoreVideos, hasMoreVideos, loadingMoreVideos: propLoadingMoreVideos, refreshVideos }) => {
-  const [currentUser, setCurrentUser] = useState<User>(initialUser);
+const AppLayout: React.FC<AppLayoutProps> = ({ currentUser, onLogout, geminiApiKey, rewardConfig, adsenseConfig, videos, loadingVideos, loadMoreVideos, hasMoreVideos, loadingMoreVideos, loadInitialVideos, onUpdateCurrentUser }) => {
+  // currentUser is now received as a prop from App.tsx, no longer managed locally here.
+  // const [currentUser, setCurrentUser] = useState<User>(initialUser); 
   const [currentPage, setCurrentPage] = useState<'feed' | 'profile' | 'rewards'>('feed');
   const [currentPlayingVideo, setCurrentPlayingVideo] = useState<Video | null>(null);
   const [rewardMessage, setRewardMessage] = useState<string | null>(null);
@@ -31,21 +33,23 @@ const AppLayout: React.FC<AppLayoutProps> = ({ currentUser: initialUser, onLogou
   const handleVideoWatchComplete = useCallback(async (videoId: string) => {
     const updatedUser = await addVideoReward(currentUser.id, videoId);
     if (updatedUser) {
-      setCurrentUser(updatedUser);
+      // Notify App.tsx to update its global currentUser state
+      await onUpdateCurrentUser(); 
       setRewardMessage(`Você ganhou R$${(updatedUser.balance - currentUser.balance).toFixed(2)}!`);
       // Also refresh the global video list to update view counts (optional, but good for consistency)
-      await refreshVideos();
+      await loadInitialVideos(); // Changed from refreshVideos to loadInitialVideos
       setTimeout(() => setRewardMessage(null), 3000);
     }
-  }, [currentUser, refreshVideos]); // refreshVideos added as dependency
+  }, [currentUser, onUpdateCurrentUser, loadInitialVideos]); // onUpdateCurrentUser, loadInitialVideos added as dependency
 
   const handleUpdatePreferences = useCallback(async (preferences: string[]) => {
     const updatedUser = await updateUserPreferences(currentUser.id, preferences);
     if (updatedUser) {
-      setCurrentUser(updatedUser);
+      // Notify App.tsx to update its global currentUser state
+      await onUpdateCurrentUser(); 
       alert('Preferências atualizadas com sucesso!');
     }
-  }, [currentUser]);
+  }, [currentUser, onUpdateCurrentUser]); // onUpdateCurrentUser added as dependency
 
   const handleNavigateToFeed = () => {
     setCurrentPlayingVideo(null); // Stop playing video when navigating away
@@ -101,12 +105,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({ currentUser: initialUser, onLogou
                 adsenseConfig={adsenseConfig}
                 loadMoreVideos={loadMoreVideos} // Pass load more callback
                 hasMoreVideos={hasMoreVideos} // Pass has more videos state
-                loadingMoreVideos={propLoadingMoreVideos} // Pass loading more state
-                refreshVideos={refreshVideos} // Pass the refresh callback
+                loadingMoreVideos={loadingMoreVideos} // Pass loading more state
+                loadInitialVideos={loadInitialVideos} // Pass the refresh callback (renamed from refreshVideos)
               />
             )}
             {currentPage === 'profile' && (
-              <UserProfile currentUser={currentUser} onUserUpdate={setCurrentUser} onUpdatePreferences={handleUpdatePreferences} />
+              <UserProfile currentUser={currentUser} onUpdateCurrentUser={onUpdateCurrentUser} onUpdatePreferences={handleUpdatePreferences} />
             )}
             {currentPage === 'rewards' && (
               <RewardTracker currentUser={currentUser} rewardConfig={rewardConfig} />

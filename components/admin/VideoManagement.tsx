@@ -8,12 +8,12 @@ import Modal from '../shared/Modal';
 import { PlusCircleIcon, PencilIcon, TrashIcon, PlayIcon, PauseIcon, EyeIcon } from '../icons/HeroIcons';
 
 interface VideoManagementProps {
-  refreshVideos: () => Promise<void>; // Callback to trigger global video list refresh (for user feed)
+  loadInitialVideos: () => Promise<void>; // Callback to trigger global video list refresh (for user feed)
   adminVideosRefreshKey: number; // Key to trigger local admin video list refresh
   onAdminVideosRefreshTriggered: () => void; // Callback to notify AdminLayout of changes
 }
 
-const VideoManagement: React.FC<VideoManagementProps> = ({ refreshVideos, adminVideosRefreshKey, onAdminVideosRefreshTriggered }) => {
+const VideoManagement: React.FC<VideoManagementProps> = ({ loadInitialVideos, adminVideosRefreshKey, onAdminVideosRefreshTriggered }) => {
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -52,11 +52,13 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ refreshVideos, adminV
       source: 'vimeo', // Default source changed from 'youtube' to 'vimeo'
       isActive: true,
     });
+    setError(null); // Clear previous errors
     setShowAddModal(true);
   };
 
   const handleEditVideoClick = (video: Video) => {
     setCurrentVideo({ ...video });
+    setError(null); // Clear previous errors
     setShowEditModal(true);
   };
 
@@ -74,6 +76,7 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ refreshVideos, adminV
     // Ensure all required fields are filled and source is valid
     if (currentVideo && currentVideo.title && currentVideo.url && currentVideo.thumbnail && currentVideo.duration !== undefined && currentVideo.source && (currentVideo.source === 'vimeo' || currentVideo.source === 'internal')) {
       setLoading(true);
+      setError(null); // Clear error before saving
       try {
         if (currentVideo.id) { // Editing existing video
           await updateVideoData(currentVideo as Video);
@@ -84,7 +87,7 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ refreshVideos, adminV
         setShowEditModal(false);
         setCurrentVideo(null);
         fetchVideos(); // Refresh admin's local list
-        await refreshVideos(); // Trigger global video list refresh (for user feed)
+        await loadInitialVideos(); // Trigger global video list refresh (for user feed)
         onAdminVideosRefreshTriggered(); // Trigger refresh for other admin components (like itself when called from Settings)
       } catch (err) {
         setError('Falha ao salvar vídeo.');
@@ -102,7 +105,7 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ refreshVideos, adminV
     try {
       await updateVideoData({ ...video, isActive: !video.isActive });
       fetchVideos(); // Refresh admin's local list
-      await refreshVideos(); // Trigger global video list refresh (for user feed)
+      await loadInitialVideos(); // Trigger global video list refresh (for user feed)
       onAdminVideosRefreshTriggered(); // Trigger refresh for other admin components
     } catch (err) {
       setError('Falha ao alterar o status do vídeo.');
@@ -114,6 +117,7 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ refreshVideos, adminV
 
   const confirmDelete = (videoId: string) => {
     setVideoToDelete(videoId);
+    setError(null); // Clear previous errors
     setShowDeleteModal(true);
   };
 
@@ -123,7 +127,7 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ refreshVideos, adminV
       try {
         await deleteVideo(videoToDelete);
         fetchVideos(); // Refresh admin's local list
-        await refreshVideos(); // Trigger global video list refresh (for user feed)
+        await loadInitialVideos(); // Trigger global video list refresh (for user feed)
         onAdminVideosRefreshTriggered(); // Trigger refresh for other admin components
         setShowDeleteModal(false);
         setVideoToDelete(null);
@@ -214,10 +218,10 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ refreshVideos, adminV
         onConfirm={handleSaveVideo}
         confirmText="Salvar Vídeo"
       >
-        <Input label="Título" id="video-title" name="title" value={currentVideo?.title || ''} onChange={handleChange} error={error ? 'Campo obrigatório' : undefined} />
-        <Input label="URL do Vídeo" id="video-url" name="url" value={currentVideo?.url || ''} onChange={handleChange} error={error ? 'Campo obrigatório' : undefined} />
-        <Input label="URL da Miniatura" id="video-thumbnail" name="thumbnail" value={currentVideo?.thumbnail || ''} onChange={handleChange} error={error ? 'Campo obrigatório' : undefined} placeholder="Ex: https://i.vimeocdn.com/video/..." />
-        <Input label="Duração (segundos)" id="video-duration" name="duration" type="number" value={currentVideo?.duration || 0} onChange={handleChange} error={error ? 'Campo obrigatório' : undefined} />
+        <Input label="Título" id="video-title" name="title" value={currentVideo?.title || ''} onChange={handleChange} />
+        <Input label="URL do Vídeo" id="video-url" name="url" value={currentVideo?.url || ''} onChange={handleChange} />
+        <Input label="URL da Miniatura" id="video-thumbnail" name="thumbnail" value={currentVideo?.thumbnail || ''} onChange={handleChange} placeholder="Ex: https://i.vimeocdn.com/video/..." />
+        <Input label="Duração (segundos)" id="video-duration" name="duration" type="number" value={currentVideo?.duration || 0} onChange={handleChange} />
         <div className="mb-4">
           <label htmlFor="video-source" className="block text-gray-300 text-sm font-bold mb-2">
             Fonte
@@ -252,13 +256,14 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ refreshVideos, adminV
 
       <Modal
         isOpen={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
+        onClose={() => { setShowDeleteModal(false); setError(null); }} // Clear error on close
         title="Confirmar Exclusão"
         onConfirm={handleDeleteVideo}
         confirmText="Excluir"
         cancelText="Cancelar"
       >
         <p className="text-gray-300">Tem certeza de que deseja excluir este vídeo? Esta ação é irreversível.</p>
+        {error && <p className="text-red-500 text-center mt-3">{error}</p>}
       </Modal>
     </div>
   );

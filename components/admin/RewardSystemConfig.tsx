@@ -8,9 +8,10 @@ import { DollarSignIcon, CheckCircleIcon, XCircleIcon, DocumentTextIcon } from '
 
 interface RewardSystemConfigProps {
   onUpdateGlobalRewardConfig: () => Promise<void>; // Callback to update global reward config
+  refreshCurrentUser: () => Promise<void>; // New prop: callback to refresh global currentUser state
 }
 
-const RewardSystemConfig: React.FC<RewardSystemConfigProps> = ({ onUpdateGlobalRewardConfig }) => {
+const RewardSystemConfig: React.FC<RewardSystemConfigProps> = ({ onUpdateGlobalRewardConfig, refreshCurrentUser }) => {
   const [rewardPerVideo, setRewardPerVideo] = useState<number>(0);
   const [minWatchTimeSeconds, setMinWatchTimeSeconds] = useState<number>(0);
   const [loading, setLoading] = useState(true);
@@ -62,6 +63,7 @@ const RewardSystemConfig: React.FC<RewardSystemConfigProps> = ({ onUpdateGlobalR
     try {
       await updateWithdrawalRequestStatus(requestId, status);
       await fetchConfigAndWithdrawals(); // Re-fetch to update list and user balances
+      await refreshCurrentUser(); // Trigger global currentUser refresh in App.tsx (if the user whose withdrawal was updated is the current logged-in user)
     } catch (err) {
       setError('Falha ao atualizar o status do pedido de saque.');
       console.error(err);

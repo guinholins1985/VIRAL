@@ -8,11 +8,11 @@ import { AppSettings, VimeoVideoMetadata } from '../../types';
 
 interface SettingsProps {
   onUpdateGlobalAppSettings: () => Promise<void>;
-  refreshVideos: () => Promise<void>; // Updated prop name to reflect global refresh
+  loadInitialVideos: () => Promise<void>; // Updated prop name to reflect global refresh (renamed from refreshVideos)
   onAdminVideosRefreshTriggered: () => void; // New prop for admin video list refresh
 }
 
-const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings, refreshVideos, onAdminVideosRefreshTriggered }) => {
+const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings, loadInitialVideos, onAdminVideosRefreshTriggered }) => {
   const [appSettings, setAppSettings] = useState<AppSettings>({
     appName: 'CASHVIRAL',
     appLogoUrl: 'https://picsum.photos/50/50?random=logo',
@@ -127,7 +127,7 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings, refreshV
       await syncVimeoAccount(appSettings.vimeoUserId!);
       setVimeoSyncSuccess(true);
       setVimeoSyncError('Sincronização de conta Vimeo bem-sucedida! Vídeos da conta foram adicionados/atualizados.');
-      await refreshVideos(); // Aciona o refresh global do feed de vídeos (App.tsx)
+      await loadInitialVideos(); // Aciona o refresh global do feed de vídeos (App.tsx)
       await onAdminVideosRefreshTriggered(); // Aciona o refresh da lista do admin (VideoManagement.tsx)
       setAvailableVimeoVideos([]); // Limpa os vídeos pré-buscados após a sincronização automática
       setTimeout(() => {setVimeoSyncSuccess(null); setVimeoSyncError(null);}, 5000);
@@ -147,7 +147,7 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings, refreshV
 
     try {
       await addSingleVimeoVideo(video);
-      await refreshVideos(); // Aciona o refresh global do feed de vídeos (App.tsx)
+      await loadInitialVideos(); // Aciona o refresh global do feed de vídeos (App.tsx)
       await onAdminVideosRefreshTriggered(); // Aciona o refresh da lista do admin (VideoManagement.tsx)
       setVimeoSyncSuccess(true);
       setVimeoSyncError('Vídeo Vimeo adicionado com sucesso!'); // Usa mensagem de sucesso aqui

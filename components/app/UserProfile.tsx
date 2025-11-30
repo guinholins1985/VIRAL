@@ -9,11 +9,11 @@ import { CreditCardIcon, ChartBarIcon } from '../icons/HeroIcons';
 
 interface UserProfileProps {
   currentUser: User;
-  onUserUpdate: (user: User) => void;
+  onUpdateCurrentUser: () => Promise<void>; // Updated prop name to reflect global refresh
   onUpdatePreferences: (preferences: string[]) => void;
 }
 
-const UserProfile: React.FC<UserProfileProps> = ({ currentUser, onUserUpdate, onUpdatePreferences }) => {
+const UserProfile: React.FC<UserProfileProps> = ({ currentUser, onUpdateCurrentUser, onUpdatePreferences }) => {
   const [withdrawalAmount, setWithdrawalAmount] = useState<string>('');
   const [withdrawalMethod, setWithdrawalMethod] = useState<WithdrawalRequest['method']>('PIX');
   const [showWithdrawalModal, setShowWithdrawalModal] = useState(false);
@@ -50,7 +50,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ currentUser, onUserUpdate, on
     try {
       await createWithdrawalRequest(currentUser.id, amount, withdrawalMethod);
       setSuccessMessage('Solicitação de saque enviada com sucesso!');
-      onUserUpdate({ ...currentUser, balance: parseFloat((currentUser.balance - amount).toFixed(2)) }); // Optimistically update balance
+      await onUpdateCurrentUser(); // Trigger global currentUser refresh in App.tsx
       setWithdrawalAmount('');
       setShowWithdrawalModal(false);
       fetchWithdrawalRequests(); // Refresh requests
