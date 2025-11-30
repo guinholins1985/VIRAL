@@ -43,39 +43,27 @@ export const MOCK_USERS = [
 
 export const MOCK_VIDEOS = [
   {
-    id: 'v_1',
-    title: 'How to Learn React in 5 Minutes',
-    thumbnail: 'https://picsum.photos/320/180?random=1',
-    duration: 300, // seconds
+    id: 'v_youtube_intro',
+    title: 'Introdução ao CASHVIRAL',
+    thumbnail: 'https://picsum.photos/320/180?random=intro',
+    duration: 180, // seconds
     source: 'youtube',
-    url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', // Placeholder, use a real YouTube link
-    views: 1200,
-    averageWatchTime: 180,
-    likes: 50,
+    url: 'https://www.youtube.com/watch?v=intro_cashviral', // Placeholder
+    views: 500,
+    averageWatchTime: 120,
+    likes: 25,
     isActive: true,
   },
   {
-    id: 'v_2',
-    title: 'Chill Lo-fi Beats for Study/Work',
-    thumbnail: 'https://picsum.photos/320/180?random=2',
-    duration: 7200,
-    source: 'youtube',
-    url: 'https://www.youtube.com/watch?v=5qap5aO4i9A', // Placeholder
-    views: 5000,
-    averageWatchTime: 600,
-    likes: 200,
-    isActive: true,
-  },
-  {
-    id: 'v_3',
-    title: 'Amazing Nature Documentary Scene',
-    thumbnail: 'https://picsum.photos/320/180?random=3',
-    duration: 120,
+    id: 'v_vimeo_example',
+    title: 'Exemplo de Vídeo Vimeo',
+    thumbnail: 'https://picsum.photos/320/180?random=vimeo',
+    duration: 240,
     source: 'vimeo',
-    url: 'https://vimeo.com/channels/staffpicks/87968434', // Placeholder
-    views: 800,
-    averageWatchTime: 90,
-    likes: 30,
+    url: 'https://vimeo.com/example_video_id', // Placeholder
+    views: 300,
+    averageWatchTime: 150,
+    likes: 15,
     isActive: true,
   },
 ];
@@ -149,9 +137,7 @@ export const AD_PLACEMENT_OPTIONS = [
 export const ADSENSE_MOCK_DATA = {
   adsenseId: 'ca-pub-8115686562988147', // Updated to match the AdSense client ID
   verificationCodes: ['<meta name="google-adsense-account" content="ca-pub-8115686562988147">'], // Example using the correct pub-ID
-  adBlocks: [
-    // Reverted adBlocks to an empty array as the ad display logic is removed.
-  ],
+  adBlocks: [], // Revertido para array vazio
   revenueReports: [
     { date: '2024-07-01', revenue: 12.34, clicks: 120, impressions: 5000 },
     { date: '2024-07-02', revenue: 15.67, clicks: 150, impressions: 6000 },
@@ -167,6 +153,6 @@ export const MOCK_APP_SETTINGS = {
   youtubeApiKey: YOUTUBE_API_KEY,
   vimeoApiKey: VIMEO_API_KEY,
   geminiApiKey: GEMINI_API_KEY,
-  vimeoAccessToken: 'YOUR_VIMEO_ACCESS_TOKEN', // Mock access token
+  // vimeoAccessToken: 'YOUR_VIMEO_ACCESS_TOKEN', // Removed as per request
   vimeoUserId: '250829792', // Added for Vimeo sync
 };

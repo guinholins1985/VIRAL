@@ -14,9 +14,10 @@ interface AppLayoutProps {
   geminiApiKey: string; // Add geminiApiKey prop
   rewardConfig: RewardConfig; // Add rewardConfig prop
   adsenseConfig: AdsenseConfig; // Add adsenseConfig prop
+  onVideoListChanged: () => Promise<void>; // New prop: callback to trigger video list refresh
 }
 
-const AppLayout: React.FC<AppLayoutProps> = ({ currentUser: initialUser, onLogout, geminiApiKey, rewardConfig, adsenseConfig }) => {
+const AppLayout: React.FC<AppLayoutProps> = ({ currentUser: initialUser, onLogout, geminiApiKey, rewardConfig, adsenseConfig, onVideoListChanged }) => {
   const [currentUser, setCurrentUser] = useState<User>(initialUser);
   const [currentPage, setCurrentPage] = useState<'feed' | 'profile' | 'rewards'>('feed');
   const [videos, setVideos] = useState<Video[]>([]);
@@ -32,8 +33,11 @@ const AppLayout: React.FC<AppLayoutProps> = ({ currentUser: initialUser, onLogou
   }, []);
 
   useEffect(() => {
+    // This effect should listen to onVideoListChanged, or be called when onVideoListChanged is fired from parent
+    // The parent (App.tsx) calls onVideoListChanged, which means it expects AppLayout to handle the refresh.
+    // So, we use a separate effect that runs when onVideoListChanged is called (by passing it as a dep)
     fetchVideos();
-  }, [fetchVideos]);
+  }, [fetchVideos, onVideoListChanged]); // onVideoListChanged added as a dependency to trigger fetch
 
   const handleVideoWatchComplete = useCallback(async (videoId: string) => {
     const updatedUser = await addVideoReward(currentUser.id, videoId);
@@ -102,7 +106,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ currentUser: initialUser, onLogou
                 currentUser={currentUser}
                 onUpdatePreferences={handleUpdatePreferences}
                 geminiApiKey={geminiApiKey} // Pass updated Gemini API key
-                // adsenseConfig={adsenseConfig} // adsenseConfig prop removed
+                adsenseConfig={adsenseConfig} // Pass updated adsense config
               />
             )}
             {currentPage === 'profile' && (

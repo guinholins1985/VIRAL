@@ -2,15 +2,16 @@ import React, { useState, useEffect } from 'react';
 import Button from '../shared/Button';
 import Input from '../shared/Input';
 import LoadingSpinner from '../shared/LoadingSpinner';
-import { CogIcon, AdjustmentsIcon, LinkIcon, VideoIcon } from '../icons/HeroIcons';
-import { getAppSettings, updateAppSettings, syncVimeoAccount } from '../../services/apiService';
-import { AppSettings } from '../../types';
+import { CogIcon, AdjustmentsIcon, LinkIcon, VideoIcon, PlusCircleIcon } from '../icons/HeroIcons';
+import { getAppSettings, updateAppSettings, syncVimeoAccount, fetchVimeoUserVideos, addSingleVimeoVideo } from '../../services/apiService';
+import { AppSettings, VimeoVideoMetadata } from '../../types';
 
 interface SettingsProps {
   onUpdateGlobalAppSettings: () => Promise<void>; // Callback to update global app settings
+  onVideoListChanged: () => Promise<void>; // Callback to trigger global video list refresh
 }
 
-const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings }) => {
+const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings, onVideoListChanged }) => {
   const [appSettings, setAppSettings] = useState<AppSettings>({
     appName: 'CASHVIRAL',
     appLogoUrl: 'https://picsum.photos/50/50?random=logo',
@@ -19,7 +20,7 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings }) => {
     youtubeApiKey: 'YOUR_YOUTUBE_API_KEY',
     vimeoApiKey: 'YOUR_VIMEO_API_KEY',
     geminiApiKey: 'YOUR_GEMINI_API_KEY',
-    vimeoAccessToken: '',
+    // vimeoAccessToken: '', // Removed as per request
     vimeoUserId: '', // Initialize new field
   });
 
@@ -30,6 +31,12 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings }) => {
   const [vimeoSyncLoading, setVimeoSyncLoading] = useState(false);
   const [vimeoSyncSuccess, setVimeoSyncSuccess] = useState<boolean | null>(null);
   const [vimeoSyncError, setVimeoSyncError] = useState<string | null>(null);
+
+  const [availableVimeoVideos, setAvailableVimeoVideos] = useState<VimeoVideoMetadata[]>([]);
+  const [isFetchingVimeoVideos, setIsFetchingVimeoVideos] = useState(false);
+  const [fetchVimeoError, setFetchVimeoError] = useState<string | null>(null);
+  const [manualAddLoadingId, setManualAddLoadingId] = useState<string | null>(null);
+
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -70,26 +77,55 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings }) => {
     }
   };
 
-  const handleSyncVimeo = async () => {
+  const validateVimeoCredentials = (): boolean => {
+    if (!appSettings.vimeoUserId || appSettings.vimeoUserId.trim() === '') {
+      setVimeoSyncError('Por favor, forneça um ID de Usuário Vimeo para sincronizar.');
+      return false;
+    }
+    setVimeoSyncError(null);
+    return true;
+  };
+
+  const handleFetchVimeoVideos = async () => {
+    setAvailableVimeoVideos([]);
+    setIsFetchingVimeoVideos(true);
+    setFetchVimeoError(null);
+    setVimeoSyncSuccess(null); // Clear sync success message
+
+    if (!validateVimeoCredentials()) {
+      setIsFetchingVimeoVideos(false);
+      return;
+    }
+
+    try {
+      const videos = await fetchVimeoUserVideos(appSettings.vimeoUserId!); // No accessToken
+      setAvailableVimeoVideos(videos);
+      setVimeoSyncSuccess(true);
+    } catch (err) {
+      setFetchVimeoError((err as Error).message || 'Falha ao buscar vídeos da conta Vimeo.');
+      setVimeoSyncSuccess(false);
+      console.error(err);
+    } finally {
+      setIsFetchingVimeoVideos(false);
+    }
+  };
+
+  const handleSyncVimeoAutomatic = async () => {
     setVimeoSyncLoading(true);
     setVimeoSyncSuccess(null);
     setVimeoSyncError(null);
 
+    if (!validateVimeoCredentials()) {
+      setVimeoSyncLoading(false);
+      return;
+    }
+
     try {
-      if (!appSettings.vimeoAccessToken) {
-        throw new Error('Por favor, forneça um Token de Acesso Vimeo.');
-      }
-      if (!appSettings.vimeoUserId) { // Added validation for Vimeo User ID
-        throw new Error('Por favor, forneça um ID de Usuário Vimeo para sincronizar.');
-      }
-      const success = await syncVimeoAccount(appSettings.vimeoAccessToken, appSettings.vimeoUserId); // Pass vimeoUserId
-      setVimeoSyncSuccess(success);
-      if (success) {
-        setVimeoSyncError(null);
-        // Optionally, trigger a video re-fetch in AppLayout if needed, for this mock it's handled by localStorage read.
-      } else {
-        setVimeoSyncError('A sincronização da conta Vimeo falhou. Por favor, verifique o token e o ID do usuário.');
-      }
+      await syncVimeoAccount(appSettings.vimeoUserId!); // No accessToken
+      setVimeoSyncSuccess(true);
+      setVimeoSyncError(null);
+      await onVideoListChanged(); // Notify App.tsx to re-fetch videos
+      setAvailableVimeoVideos([]); // Clear fetched videos after automatic sync
       setTimeout(() => setVimeoSyncSuccess(null), 5000);
     } catch (err) {
       setVimeoSyncSuccess(false);
@@ -99,6 +135,28 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings }) => {
       setVimeoSyncLoading(false);
     }
   };
+
+  const handleAddManualVimeoVideo = async (video: VimeoVideoMetadata) => {
+    setManualAddLoadingId(video.id);
+    setVimeoSyncError(null);
+    setVimeoSyncSuccess(null); // Clear any previous sync success message
+
+    try {
+      await addSingleVimeoVideo(video);
+      await onVideoListChanged(); // Notify App.tsx to re-fetch videos
+      // Optionally remove from availableVimeoVideos list, or mark as added
+      setVimeoSyncSuccess(true); // Indicate manual add success
+      setVimeoSyncError('Vídeo Vimeo adicionado com sucesso!'); // Use error for custom message
+      setTimeout(() => {setVimeoSyncSuccess(null); setVimeoSyncError(null);}, 3000);
+    } catch (err) {
+      setVimeoSyncSuccess(false);
+      setVimeoSyncError((err as Error).message || 'Falha ao adicionar vídeo manualmente.');
+      console.error(err);
+    } finally {
+      setManualAddLoadingId(null);
+    }
+  };
+
 
   if (loading) {
     return (
@@ -200,19 +258,10 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings }) => {
         </h3>
         <p className="text-gray-400 mb-4">
           Conecte sua conta Vimeo para gerenciar vídeos diretamente.
-          Insira seu token de acesso pessoal Vimeo e o ID do usuário para sincronizar seus vídeos.
+          Insira o ID do usuário Vimeo para sincronizar seus vídeos.
           (Isso é uma simulação para fins de demonstração.)
         </p>
-        <Input
-          label="Token de Acesso Vimeo"
-          id="vimeoAccessToken"
-          name="vimeoAccessToken"
-          type="password"
-          value={appSettings.vimeoAccessToken || ''}
-          onChange={handleChange}
-          className="mb-4"
-          placeholder="Seu token de acesso pessoal Vimeo"
-        />
+        {/* Removed Vimeo Access Token Input */}
         <Input
           label="ID de Usuário Vimeo"
           id="vimeoUserId"
@@ -223,11 +272,68 @@ const Settings: React.FC<SettingsProps> = ({ onUpdateGlobalAppSettings }) => {
           className="mb-4"
           placeholder="Ex: 250829792"
         />
-        <Button onClick={handleSyncVimeo} disabled={vimeoSyncLoading} className="py-2.5">
-          {vimeoSyncLoading ? <LoadingSpinner size="sm" color="border-white" /> : 'Sincronizar Conta Vimeo'}
-        </Button>
-        {vimeoSyncSuccess === true && <p className="text-green-400 text-sm mt-2 flex items-center"><VideoIcon className="h-5 w-5 mr-1"/> Sincronização de conta Vimeo bem-sucedida! Vídeos da conta foram adicionados/atualizados.</p>}
+        
+        <div className="flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-3 mb-6">
+          <Button onClick={handleFetchVimeoVideos} disabled={isFetchingVimeoVideos} className="md:flex-grow py-2.5">
+            {isFetchingVimeoVideos ? <LoadingSpinner size="sm" color="border-white" /> : 'Buscar Vídeos da Conta'}
+          </Button>
+          <Button
+            onClick={handleSyncVimeoAutomatic}
+            disabled={vimeoSyncLoading}
+            variant="primary"
+            className="md:flex-grow py-2.5"
+          >
+            {vimeoSyncLoading ? <LoadingSpinner size="sm" color="border-white" /> : 'Sincronizar Todos (Automático - Substitui Existentes)'}
+          </Button>
+        </div>
+
+        {vimeoSyncSuccess === true && (
+          <p className="text-green-400 text-sm mt-2 flex items-center">
+            <VideoIcon className="h-5 w-5 mr-1"/> {vimeoSyncError || 'Sincronização de conta Vimeo bem-sucedida!'}
+          </p>
+        )}
         {vimeoSyncSuccess === false && vimeoSyncError && <p className="text-red-500 text-sm mt-2">{vimeoSyncError}</p>}
+
+
+        {/* Display Available Vimeo Videos */}
+        {isFetchingVimeoVideos && (
+          <div className="flex items-center justify-center p-4">
+            <LoadingSpinner size="sm" /> <span className="ml-2 text-gray-400">Buscando vídeos...</span>
+          </div>
+        )}
+        {fetchVimeoError && <p className="text-red-500 text-sm mt-2">{fetchVimeoError}</p>}
+
+        {availableVimeoVideos.length > 0 && (
+          <div className="mt-6 p-4 bg-gray-700 rounded-lg border border-gray-600">
+            <h4 className="text-lg font-bold text-white mb-3">
+              {availableVimeoVideos.length} Vídeos disponíveis para sincronizar:
+            </h4>
+            <div className="max-h-60 overflow-y-auto pr-2">
+              <ul className="space-y-3">
+                {availableVimeoVideos.map((video) => (
+                  <li key={video.id} className="flex items-center bg-gray-600 p-2 rounded-md shadow-sm">
+                    <img src={video.thumbnail} alt={video.title} className="w-16 h-9 object-cover rounded mr-3" />
+                    <div className="flex-grow">
+                      <p className="text-sm font-semibold text-white truncate">{video.title}</p>
+                      <p className="text-xs text-gray-300">{Math.floor(video.duration / 60)}m {video.duration % 60}s</p>
+                    </div>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleAddManualVimeoVideo(video)}
+                      disabled={manualAddLoadingId === video.id}
+                      title="Adicionar Vídeo Individualmente"
+                      className="whitespace-nowrap ml-2"
+                    >
+                      {manualAddLoadingId === video.id ? <LoadingSpinner size="sm" color="border-white" /> : <PlusCircleIcon className="h-4 w-4" />}
+                      <span className="sr-only">Adicionar</span>
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Save Button */}

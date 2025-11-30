@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Video, User } from '../../types'; // Removed AdsenseConfig import
+import { Video, User, AdsenseConfig } from '../../types'; // Re-added AdsenseConfig import
 import VideoCard from './VideoCard';
 import LoadingSpinner from '../shared/LoadingSpinner';
 import { getRecommendation } from '../../services/geminiService';
 import Button from '../shared/Button';
 import Input from '../shared/Input';
 import { SparklesIcon } from '../icons/HeroIcons'; // Corrected import path
-// Removed AdUnit import
+import AdUnit from './AdUnit'; // Re-added AdUnit import
 
 interface VideoFeedProps {
   videos: Video[];
@@ -14,15 +14,15 @@ interface VideoFeedProps {
   currentUser: User;
   onUpdatePreferences: (preferences: string[]) => void;
   geminiApiKey: string; // Accept geminiApiKey as prop
-  // adsenseConfig: AdsenseConfig; // adsenseConfig prop removed
+  adsenseConfig: AdsenseConfig; // Re-added adsenseConfig prop
 }
 
-const VideoFeed: React.FC<VideoFeedProps> = ({ videos, onOpenVideo, currentUser, onUpdatePreferences, geminiApiKey }) => {
+const VideoFeed: React.FC<VideoFeedProps> = ({ videos, onOpenVideo, currentUser, onUpdatePreferences, geminiApiKey, adsenseConfig }) => {
   const [recommendation, setRecommendation] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [preferenceInput, setPreferenceInput] = useState<string>('');
 
-  // Removed activeAdBlocks constant
+  const activeAdBlocks = adsenseConfig.adBlocks.filter(block => block.active && block.placement === 'video-feed');
 
   const fetchRecommendation = useCallback(async (preferences: string[]) => {
     setAiLoading(true);
@@ -103,10 +103,14 @@ const VideoFeed: React.FC<VideoFeedProps> = ({ videos, onOpenVideo, currentUser,
         <p className="text-gray-400 text-center">Nenhum vídeo disponível no momento.</p>
       ) : (
         <div className="space-y-6">
-          {videos.map((video) => ( // Removed index from map as it's not used for ad insertion
+          {videos.map((video, index) => (
             <React.Fragment key={video.id}>
               <VideoCard video={video} onOpenVideo={onOpenVideo} />
-              {/* AdSense ad unit insertion logic removed */}
+              {activeAdBlocks.length > 0 && index % 3 === 0 && index !== 0 && ( // Display ad after every 3 videos
+                <div className="my-6">
+                  <AdUnit adBlock={activeAdBlocks[Math.floor(Math.random() * activeAdBlocks.length)]} />
+                </div>
+              )}
             </React.Fragment>
           ))}
         </div>

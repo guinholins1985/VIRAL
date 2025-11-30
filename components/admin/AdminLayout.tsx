@@ -16,6 +16,7 @@ interface AdminLayoutProps {
   onUpdateGlobalAdsenseConfig: () => Promise<void>; // Callback to update global Adsense config
   onUpdateGlobalAppSettings: () => Promise<void>; // Callback to update global App settings
   onUpdateGlobalRewardConfig: () => Promise<void>; // Callback to update global Reward config
+  onVideoListChanged: () => Promise<void>; // New prop: callback to trigger video list refresh
 }
 
 enum AdminPage {
@@ -33,6 +34,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
   onUpdateGlobalAdsenseConfig,
   onUpdateGlobalAppSettings,
   onUpdateGlobalRewardConfig,
+  onVideoListChanged, // Destructure new prop
 }) => {
   const [currentPage, setCurrentPage] = useState<AdminPage>(AdminPage.DASHBOARD);
 
@@ -59,7 +61,12 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
           {currentPage === AdminPage.VIDEOS && <VideoManagement />}
           {currentPage === AdminPage.REWARDS && <RewardSystemConfig onUpdateGlobalRewardConfig={onUpdateGlobalRewardConfig} />}
           {currentPage === AdminPage.ADSENSE && <AdsenseConfig onUpdateGlobalAdsenseConfig={onUpdateGlobalAdsenseConfig} />}
-          {currentPage === AdminPage.SETTINGS && <Settings onUpdateGlobalAppSettings={onUpdateGlobalAppSettings} />}
+          {currentPage === AdminPage.SETTINGS && (
+            <Settings
+              onUpdateGlobalAppSettings={onUpdateGlobalAppSettings}
+              onVideoListChanged={onVideoListChanged} // Pass new callback
+            />
+          )}
         </main>
       </div>
     </div>

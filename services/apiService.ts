@@ -1,4 +1,4 @@
-import { User, Video, RewardTransaction, WithdrawalRequest, AdminDashboardData, AdsenseConfig, AppSettings, RewardConfig } from '../types';
+import { User, Video, RewardTransaction, WithdrawalRequest, AdminDashboardData, AdsenseConfig, AppSettings, RewardConfig, VimeoVideoMetadata } from '../types';
 import { MOCK_USERS, MOCK_VIDEOS, MOCK_ADMIN_DASHBOARD_DATA, MOCK_WITHDRAWAL_REQUESTS, ADSENSE_MOCK_DATA, MOCK_APP_SETTINGS, REWARD_PER_VIDEO, MIN_WATCH_TIME_SECONDS } from '../constants';
 
 const localStorageKey = 'currentUser';
@@ -315,48 +315,111 @@ export const updateAppSettings = async (settings: AppSettings): Promise<void> =>
   localStorage.setItem(localStorageAppSettingsKey, JSON.stringify(settings));
 };
 
-export const syncVimeoAccount = async (accessToken: string, vimeoUserId?: string): Promise<boolean> => {
-  await delay(1500); // Simulate API call
-  console.log('Tentando sincronizar conta Vimeo com token:', accessToken, 'e ID de usuário:', vimeoUserId);
+// Helper function to generate a consistent set of mock Vimeo videos for a user
+const generateMockVimeoVideosForUser = (userId: string): Video[] => {
+  const seed = parseInt(userId) || 12345; // Use userId as a seed for consistent generation
+  const rand = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
 
-  if (!accessToken || accessToken.length < 10) { // Basic validation
-    console.error('Falha na sincronização da conta Vimeo (mock): Token de acesso Vimeo inválido.');
-    throw new Error('Token de acesso Vimeo inválido.');
+  // Use a simple pseudo-random generator for consistent results based on seed
+  const seededRandom = (() => {
+    let s = seed;
+    return () => {
+      s = (s * 9301 + 49297) % 233280;
+      return s / 233280;
+    };
+  })();
+
+  const numVideos = rand(3, 5); // Generate between 3 and 5 videos
+  const videos: Video[] = [];
+  for (let i = 1; i <= numVideos; i++) {
+    const videoVimeoId = `${Math.floor(seededRandom() * 900000000) + 100000000}`; // Random 9-digit Vimeo-like ID
+    videos.push({
+      id: `v_vimeo_sync_${userId}_${videoVimeoId}`,
+      title: `Vimeo de ${userId}: Vídeo Automatizado #${i}`,
+      thumbnail: `https://i.vimeocdn.com/video/${videoVimeoId}_295x166.jpg`, // Mock Vimeo thumbnail format
+      duration: rand(120, 600), // 2-10 minutes
+      source: 'vimeo',
+      url: `https://vimeo.com/${videoVimeoId}`,
+      views: rand(100, 5000),
+      averageWatchTime: rand(50, 100),
+      likes: rand(10, 200),
+      isActive: true,
+      uploadDate: new Date().toISOString(),
+      category: 'Vimeo Sincronizado',
+    });
   }
+  return videos;
+};
+
+export const syncVimeoAccount = async (vimeoUserId?: string): Promise<boolean> => {
+  await delay(1500); // Simulate API call
+  console.log('Tentando sincronizar conta Vimeo (automático) com ID de usuário:', vimeoUserId);
+
   if (!vimeoUserId) {
     console.error('Falha na sincronização da conta Vimeo (mock): ID de usuário Vimeo não fornecido.');
     throw new Error('ID de usuário Vimeo não fornecido.');
   }
-
-  // Generate a new set of mock Vimeo videos specifically for this user
-  const generateMockVimeoVideosForUser = (userId: string): Video[] => {
-    const numVideos = Math.floor(Math.random() * (5 - 3 + 1)) + 3; // 3 to 5 videos
-    const videos: Video[] = [];
-    for (let i = 1; i <= numVideos; i++) {
-      const videoId = `${Math.floor(Math.random() * 900000000) + 100000000}`; // Random 9-digit Vimeo-like ID
-      videos.push({
-        id: `v_vimeo_sync_${userId}_${videoId}`,
-        title: `Vimeo de ${userId}: Vídeo Automatizado #${i}`,
-        thumbnail: `https://i.vimeocdn.com/video/${videoId}_295x166.jpg`, // Mock Vimeo thumbnail format
-        duration: Math.floor(Math.random() * (600 - 120 + 1)) + 120, // 2-10 minutes
-        source: 'vimeo',
-        url: `https://vimeo.com/${videoId}`,
-        views: Math.floor(Math.random() * 5000) + 100,
-        averageWatchTime: Math.floor(Math.random() * 100) + 50,
-        likes: Math.floor(Math.random() * 200) + 10,
-        isActive: true,
-        uploadDate: new Date().toISOString(),
-        category: 'Vimeo Sincronizado',
-      });
-    }
-    return videos;
-  };
 
   const newVimeoVideos = generateMockVimeoVideosForUser(vimeoUserId);
 
   // Overwrite the entire video list in localStorage with ONLY the newly generated Vimeo videos
   localStorage.setItem(localStorageVideosKey, JSON.stringify(newVimeoVideos));
   
-  console.log(`Conta Vimeo para o usuário ${vimeoUserId} sincronizada com sucesso (mock)! ${newVimeoVideos.length} vídeos adicionados.`);
+  console.log(`Conta Vimeo para o usuário ${vimeoUserId} sincronizada (automática) com sucesso (mock)! ${newVimeoVideos.length} vídeos adicionados.`);
   return true;
+};
+
+export const fetchVimeoUserVideos = async (vimeoUserId: string): Promise<VimeoVideoMetadata[]> => {
+  await delay(1000); // Simulate API call
+  console.log('Buscando vídeos Vimeo para pré-visualização com ID de usuário:', vimeoUserId);
+
+  if (!vimeoUserId) {
+    console.error('Falha ao buscar vídeos Vimeo (mock): ID de usuário Vimeo não fornecido.');
+    throw new Error('ID de usuário Vimeo não fornecido.');
+  }
+
+  const mockVideos = generateMockVimeoVideosForUser(vimeoUserId); // Use the same generator for consistency
+  const metadataList: VimeoVideoMetadata[] = mockVideos.map(v => ({
+    id: v.id,
+    title: v.title,
+    thumbnail: v.thumbnail,
+    duration: v.duration,
+    url: v.url,
+  }));
+
+  console.log(`${metadataList.length} vídeos encontrados para pré-visualização para o usuário ${vimeoUserId} (mock).`);
+  return metadataList;
+};
+
+export const addSingleVimeoVideo = async (videoMetadata: VimeoVideoMetadata): Promise<Video> => {
+  await delay(500); // Simulate API call
+  console.log('Adicionando vídeo Vimeo manualmente:', videoMetadata.title);
+
+  let videos: Video[] = JSON.parse(localStorage.getItem(localStorageVideosKey) || '[]');
+
+  // Prevent adding duplicates
+  if (videos.some(v => v.url === videoMetadata.url)) {
+    console.warn(`Vídeo ${videoMetadata.title} já existe. Não foi adicionado novamente.`);
+    throw new Error(`Vídeo "${videoMetadata.title}" já existe na lista.`);
+  }
+
+  const newVideo: Video = {
+    id: `v_${Date.now()}_${videoMetadata.id}`, // Ensure unique ID
+    title: videoMetadata.title,
+    thumbnail: videoMetadata.thumbnail,
+    duration: videoMetadata.duration,
+    source: 'vimeo',
+    url: videoMetadata.url,
+    views: 0,
+    averageWatchTime: 0,
+    likes: 0,
+    isActive: true,
+    uploadDate: new Date().toISOString(),
+    category: 'Vimeo Adicionado Manualmente',
+  };
+
+  videos.push(newVideo);
+  localStorage.setItem(localStorageVideosKey, JSON.stringify(videos));
+  console.log(`Vídeo ${newVideo.title} adicionado manualmente com sucesso.`);
+  return newVideo;
 };

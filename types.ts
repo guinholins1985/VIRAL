@@ -24,6 +24,14 @@ export interface Video {
   category?: string;
 }
 
+export interface VimeoVideoMetadata {
+  id: string; // Vimeo video ID
+  title: string;
+  thumbnail: string;
+  duration: number; // in seconds
+  url: string; // Vimeo URL
+}
+
 export interface RewardTransaction {
   id: string;
   userId: string;
@@ -89,7 +97,7 @@ export interface AppSettings {
   youtubeApiKey: string;
   vimeoApiKey: string;
   geminiApiKey: string;
-  vimeoAccessToken?: string; // Added for Vimeo sync
+  // vimeoAccessToken?: string; // Removed as per request
   vimeoUserId?: string; // Added for Vimeo sync
 }
 

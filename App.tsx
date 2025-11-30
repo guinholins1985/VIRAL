@@ -4,7 +4,7 @@ import AuthPage from './components/auth/AuthPage';
 import AppLayout from './components/app/AppLayout';
 import AdminLayout from './components/admin/AdminLayout';
 import { User, AdsenseConfig, AppSettings, RewardConfig } from './types';
-import { getCurrentUser, login as apiLogin, register as apiRegister, getAdsenseConfig, getAppSettings, getRewardConfig } from './services/apiService';
+import { getCurrentUser, login as apiLogin, register as apiRegister, getAdsenseConfig, getAppSettings, getRewardConfig, getVideos } from './services/apiService'; // Import getVideos
 
 // Define the available routes/pages
 enum AppRoute {
@@ -57,6 +57,18 @@ const App: React.FC = () => {
   const updateGlobalRewardConfig = useCallback(async () => {
     const config = await getRewardConfig();
     setRewardConfig(config);
+  }, []);
+
+  // New callback to trigger video list refresh globally
+  const handleVideoListChanged = useCallback(async () => {
+    // This function will be passed down to AppLayout and AdminLayout
+    // AppLayout will use it to re-fetch videos for the main feed.
+    // AdminLayout's video management will also be implicitly updated on its next render.
+    // For now, simply forcing AppLayout to re-render is enough.
+    // In a more complex app, this might trigger a context update or a direct fetch.
+    // For this mock, a simpler approach is needed since AppLayout manages its own video state.
+    // Let's ensure AppLayout has a way to directly trigger its fetchVideos.
+    // (This will be implemented in AppLayout)
   }, []);
 
 
@@ -178,6 +190,7 @@ const App: React.FC = () => {
           geminiApiKey={appSettings.geminiApiKey} // Pass updated API key
           rewardConfig={rewardConfig} // Pass updated reward config
           adsenseConfig={adsenseConfig} // Pass updated adsense config
+          onVideoListChanged={handleVideoListChanged} // Pass new callback
         />
       )}
       {currentRoute === AppRoute.ADMIN && currentUser && currentUser.isAdmin && (
@@ -187,6 +200,7 @@ const App: React.FC = () => {
           onUpdateGlobalAdsenseConfig={updateGlobalAdsenseConfig}
           onUpdateGlobalAppSettings={updateGlobalAppSettings}
           onUpdateGlobalRewardConfig={updateGlobalRewardConfig}
+          onVideoListChanged={handleVideoListChanged} // Pass new callback
         />
       )}
     </div>
