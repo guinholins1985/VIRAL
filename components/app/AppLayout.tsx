@@ -102,7 +102,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ currentUser: initialUser, onLogou
                 currentUser={currentUser}
                 onUpdatePreferences={handleUpdatePreferences}
                 geminiApiKey={geminiApiKey} // Pass updated Gemini API key
-                adsenseConfig={adsenseConfig} // Pass adsense config to VideoFeed
+                // adsenseConfig={adsenseConfig} // adsenseConfig prop removed
               />
             )}
             {currentPage === 'profile' && (

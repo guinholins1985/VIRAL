@@ -186,27 +186,7 @@ export const ADSENSE_MOCK_DATA = {
   adsenseId: 'ca-pub-8115686562988147', // Updated to match the AdSense client ID
   verificationCodes: ['<meta name="google-adsense-account" content="ca-pub-8115686562988147">'], // Example using the correct pub-ID
   adBlocks: [
-    {
-      id: 'ad_feed_1',
-      name: 'Anúncio do Feed (Fluid)',
-      code: '<ins class="adsbygoogle" style="display:block" data-ad-format="fluid" data-ad-layout-key="-6t+ed+2i-1n-4w" data-ad-client="ca-pub-8115686562988147" data-ad-slot="1306806831"></ins>',
-      active: true,
-      placement: 'video-feed'
-    },
-    {
-      id: 'ad_feed_2',
-      name: 'Anúncio do Feed (Auto Responsivo)',
-      code: '<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-8115686562988147" data-ad-slot="1284300692" data-ad-format="auto" data-full-width-responsive="true"></ins>',
-      active: true,
-      placement: 'video-feed'
-    },
-    {
-      id: 'ad_footer_banner',
-      name: 'Anúncio do Rodapé',
-      code: '<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-8115686562988147" data-ad-slot="9876543210" data-ad-format="auto" data-full-width-responsive="true"></ins>',
-      active: false,
-      placement: 'footer'
-    },
+    // Reverted adBlocks to an empty array as the ad display logic is removed.
   ],
   revenueReports: [
     { date: '2024-07-01', revenue: 12.34, clicks: 120, impressions: 5000 },
