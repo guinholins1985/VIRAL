@@ -1,16 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createRoot } from 'react-dom/client';
 import LandingPage from './components/landing/LandingPage';
 import AuthPage from './components/auth/AuthPage';
 import AppLayout from './components/app/AppLayout';
 import AdminLayout from './components/admin/AdminLayout';
-import { User, AdsenseConfig, AppSettings, RewardConfig, Video, AppRoute } from './types'; // Import AppRoute from types
-import { getCurrentUser, login as apiLogin, register as apiRegister, getAdsenseConfig, getAppSettings, getRewardConfig, getPaginatedVideos } from './services/apiService'; // Import getPaginatedVideos
-import { VIDEOS_PER_PAGE } from './constants'; // Import VIDEOS_PER_PAGE
+import { User, AdsenseConfig, AppSettings, RewardConfig, Video, AppRoute } from './types';
+import { getCurrentUser, login as apiLogin, register as apiRegister, getAdsenseConfig, getAppSettings, getRewardConfig, getPaginatedVideos } from './services/apiService';
+import { VIDEOS_PER_PAGE } from './constants';
 
 const App: React.FC = () => {
   const [currentRoute, setCurrentRoute] = useState<AppRoute>(AppRoute.LANDING);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [loadingAppConfig, setLoadingAppConfig] = useState(true); // Renamed for clarity: initial app config loading
+  const [loadingAppConfig, setLoadingAppConfig] = useState(true);
 
   // Global states for admin configurations
   const [adsenseConfig, setAdsenseConfig] = useState<AdsenseConfig | null>(null);
@@ -19,10 +20,10 @@ const App: React.FC = () => {
 
   // Global states for video list and pagination (elevated from AppLayout)
   const [videos, setVideos] = useState<Video[]>([]);
-  const [loadingVideos, setLoadingVideos] = useState(true); // Initial load for the first page
+  const [loadingVideos, setLoadingVideos] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
   const [hasMoreVideos, setHasMoreVideos] = useState(true);
-  const [loadingMoreVideos, setLoadingMoreVideos] = useState(false); // For infinite scroll loading
+  const [loadingMoreVideos, setLoadingMoreVideos] = useState(false);
 
   // Centralized function to refresh global currentUser state from localStorage
   const refreshCurrentUser = useCallback(async () => {
@@ -222,16 +223,16 @@ const App: React.FC = () => {
         <AppLayout
           currentUser={currentUser}
           onLogout={handleLogout}
-          geminiApiKey={appSettings.geminiApiKey} // Pass updated API key
-          rewardConfig={rewardConfig} // Pass updated reward config
-          adsenseConfig={adsenseConfig} // Pass updated adsense config
-          videos={videos} // Pass videos from App.tsx
-          loadingVideos={loadingVideos} // Pass loading state for videos
-          loadMoreVideos={loadMoreVideos} // Pass the load more callback
-          hasMoreVideos={hasMoreVideos} // Pass if there are more videos to load
-          loadingMoreVideos={loadingMoreVideos} // Pass loading state for more videos
-          loadInitialVideos={loadInitialVideos} // Pass the refresh callback for videos
-          onUpdateCurrentUser={refreshCurrentUser} // Pass the refresh callback for currentUser
+          geminiApiKey={appSettings.geminiApiKey}
+          rewardConfig={rewardConfig}
+          adsenseConfig={adsenseConfig}
+          videos={videos}
+          loadingVideos={loadingVideos}
+          loadMoreVideos={loadMoreVideos}
+          hasMoreVideos={hasMoreVideos}
+          loadingMoreVideos={loadingMoreVideos}
+          loadInitialVideos={loadInitialVideos}
+          onUpdateCurrentUser={refreshCurrentUser}
         />
       )}
       {currentRoute === AppRoute.ADMIN && currentUser && currentUser.isAdmin && (
@@ -241,12 +242,17 @@ const App: React.FC = () => {
           onUpdateGlobalAdsenseConfig={updateGlobalAdsenseConfig}
           onUpdateGlobalAppSettings={updateGlobalAppSettings}
           onUpdateGlobalRewardConfig={updateGlobalRewardConfig}
-          loadInitialVideos={loadInitialVideos} // Pass the refresh callback for videos
-          refreshCurrentUser={refreshCurrentUser} // Pass the refresh callback for currentUser
+          loadInitialVideos={loadInitialVideos}
+          refreshCurrentUser={refreshCurrentUser}
         />
       )}
     </div>
   );
 };
 
-export default App;
+// Renderiza o componente App no elemento HTML com id "root"
+const container = document.getElementById('root');
+if (container) {
+  const root = createRoot(container);
+  root.render(<App />);
+}

@@ -5,10 +5,10 @@ interface AdUnitProps {
   adBlock: AdBlock;
 }
 
-// Declare adsbygoogle on the Window object
+// Declare adsbygoogle on the Window object, ensuring it's an array for push commands
 declare global {
   interface Window {
-    adsbygoogle: unknown[];
+    adsbygoogle: unknown[]; 
   }
 }
 
@@ -17,23 +17,36 @@ const AdUnit: React.FC<AdUnitProps> = ({ adBlock }) => {
 
   useEffect(() => {
     if (adRef.current && adBlock.code) {
-      // Clear any existing content
+      // Clear any existing content to prevent duplicate ad units if component re-renders
       adRef.current.innerHTML = '';
       
       // Inject the <ins> tag
       adRef.current.innerHTML = adBlock.code;
 
-      // Push to adsbygoogle queue to load the ad
       try {
-        if (window.adsbygoogle && typeof window.adsbygoogle.push === 'function') {
-          (window.adsbygoogle = window.adsbygoogle || []).push({});
-        } else {
-          console.warn('AdSense script not loaded or adsbygoogle.push is not a function.');
-        }
+        // Ensure window.adsbygoogle is initialized as an array
+        // The AdSense script will later redefine this array with its push method
+        // or process commands already pushed to it.
+        window.adsbygoogle = window.adsbygoogle || [];
+        
+        // Push an empty object to trigger ad loading for this specific slot.
+        // This is the most common and robust way to handle dynamic AdSense units.
+        (window.adsbygoogle as any[]).push({}); 
+
+        console.log('AdSense: Ad unit pushed successfully.', adBlock.id);
       } catch (e) {
-        console.error('Error pushing AdSense ad:', e);
+        console.error('AdSense: Error pushing ad unit command for', adBlock.id, e);
       }
     }
+    
+    // Cleanup function:
+    return () => {
+      // On unmount, clear innerHTML of the ad slot.
+      // This prevents issues if the same ad unit is re-rendered elsewhere.
+      if (adRef.current) {
+        adRef.current.innerHTML = '';
+      }
+    };
   }, [adBlock.code]); // Re-run if the ad block code changes
 
   return (
