@@ -73,7 +73,8 @@ const App: React.FC = () => {
       // Pass isInitialLoad: true for faster initial fetching
       const { videos: fetchedVideos, total } = await getPaginatedVideos(0, VIDEOS_PER_PAGE, true); 
       setVideos(fetchedVideos);
-      setHasMoreVideos(fetchedVideos.length < total); // Check if all videos loaded in first page
+      // If the first load doesn't fill the page or is exactly total, no more videos
+      setHasMoreVideos(fetchedVideos.length < total); 
     } catch (error) {
       console.error("Falha ao buscar vídeos iniciais:", error);
       setVideos([]); // Clear videos on error
@@ -194,7 +195,6 @@ const App: React.FC = () => {
     setCurrentRoute(route);
   }, []);
 
-  // Combined loading state
   if (loadingAppConfig || loadingVideos || !adsenseConfig || !appSettings || !rewardConfig) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-900">

@@ -102,7 +102,6 @@ export interface AppSettings {
   appLogoUrl: string;
   privacyPolicyUrl: string;
   termsOfServiceUrl: string;
-  // youtubeApiKey: string; // Removed as per request
   vimeoApiKey: string;
   geminiApiKey: string; // Re-enabled
   vimeoUserId?: string; // Added for Vimeo sync

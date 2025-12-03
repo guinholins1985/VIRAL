@@ -18,12 +18,12 @@ interface AppLayoutProps {
   loadingVideos: boolean; // Now received as prop
   loadMoreVideos: () => Promise<void>; // New prop: callback to load more videos
   hasMoreVideos: boolean; // New prop: indicates if there are more videos to load
-  loadingMoreVideos: boolean; // New prop: loading state for infinite scroll
-  loadInitialVideos: () => Promise<void>; // Now received as prop (renamed from refreshVideos to loadInitialVideos)
+  loadingMoreVideos: boolean; // New prop: loading state for infinite scroll (corrected)
+  loadInitialVideos: () => Promise<void>; // Now received as prop
   onUpdateCurrentUser: () => Promise<void>; // New prop: callback to refresh global currentUser state
 }
 
-const AppLayout: React.FC<AppLayoutProps> = ({ currentUser, onLogout, geminiApiKey, rewardConfig, adsenseConfig, videos, loadingVideos, loadMoreVideos, hasMoreVideos, loadingMoreVideos: propLoadingMoreVideos, loadInitialVideos, onUpdateCurrentUser }) => {
+const AppLayout: React.FC<AppLayoutProps> = ({ currentUser, onLogout, geminiApiKey, rewardConfig, adsenseConfig, videos, loadingVideos, loadMoreVideos, hasMoreVideos, loadingMoreVideos, loadInitialVideos, onUpdateCurrentUser }) => {
   // currentUser is now received as a prop from App.tsx, no longer managed locally here.
   // const [currentUser, setCurrentUser] = useState<User>(initialUser); 
   const [currentPage, setCurrentPage] = useState<'feed' | 'profile' | 'rewards'>('feed');
@@ -110,8 +110,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ currentUser, onLogout, geminiApiK
                 adsenseConfig={adsenseConfig}
                 loadMoreVideos={loadMoreVideos} // Pass load more callback
                 hasMoreVideos={hasMoreVideos} // Pass has more videos state
-                loadingMoreVideos={propLoadingMoreVideos} // Pass loading more state correctly
+                loadingMoreVideos={loadingMoreVideos} // Pass loading more state correctly
                 loadInitialVideos={loadInitialVideos} // Pass the refresh callback
+                onUpdateCurrentUser={onUpdateCurrentUser} // Pass the refresh callback
               />
             )}
             {currentPage === 'profile' && (
